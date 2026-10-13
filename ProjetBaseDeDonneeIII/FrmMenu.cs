@@ -16,5 +16,11 @@ namespace ProjetBaseDeDonneeIII
         {
             InitializeComponent();
         }
+
+
+        private void FrmMenu_Load_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }

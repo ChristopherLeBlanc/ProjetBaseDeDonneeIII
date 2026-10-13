@@ -16,7 +16,14 @@ namespace ProjetBaseDeDonneeIII
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FrmConnexion());
+
+            using (FrmConnexion frmConnexion = new FrmConnexion())
+            {
+                if (frmConnexion.ShowDialog() != DialogResult.OK)
+                    return; // annulé, erreur de base de données ou 3 échecs : l'application se ferme
+            }
+
+            Application.Run(new FrmMenu());
         }
     }
 }

@@ -27,8 +27,8 @@ namespace ProjetBaseDeDonneeIII.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=tcp:424sql.cgodin.qc.ca,5433;Initial Catalog=BDB56Projet1CKW;Persist " +
-            "Security Info=True;User ID=B56Projet1CKW;Encrypt=True;TrustServerCertificate=Tru" +
-            "e")]
+            "Security Info=True;User ID=B56Projet1CKW;Password=Password2;Encrypt=True;TrustSe" +
+            "rverCertificate=True")]
         public string BDB56Projet1CKWConnectionString {
             get {
                 return ((string)(this["BDB56Projet1CKWConnectionString"]));
