@@ -17,13 +17,21 @@ namespace ProjetBaseDeDonneeIII
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            using (FrmConnexion frmConnexion = new FrmConnexion())
+            bool continuer = true;
+            while (continuer)
             {
-                if (frmConnexion.ShowDialog() != DialogResult.OK)
-                    return; // annulé, erreur de base de données ou 3 échecs : l'application se ferme
-            }
+                using (FrmConnexion frmConnexion = new FrmConnexion())
+                {
+                    if (frmConnexion.ShowDialog() != DialogResult.OK)
+                        return; // annulé ou 3 échecs : on quitte
+                }
 
-            Application.Run(new FrmMenu());
+                using (FrmMenu frmPrincipal = new FrmMenu())
+                {
+                    frmPrincipal.ShowDialog();
+                    continuer = frmPrincipal.Deconnexion; // true : retour à la connexion
+                }
+            }
         }
     }
 }
