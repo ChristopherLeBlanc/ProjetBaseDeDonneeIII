@@ -9,9 +9,8 @@ namespace ProjetBaseDeDonneeIII
     {
         private const int ADMIN_INITIAL = 1;
 
-        // Modèle en mémoire (mode déconnecté)
-        private DataSet ds = new DataSet();
-
+        String maChaineDeConnexion = ConnexionBD.Chaine;
+        DataSet monDataSet = new DataSet();
         private bool modeAjout = false;
 
         public FrmUtilisateurs()
@@ -53,32 +52,40 @@ namespace ProjetBaseDeDonneeIII
 
         private void ChargerTypes()
         {
-            string requete = "SELECT NoTypeUtilisateur, Identification FROM TypeUtilisateur";
-            SqlDataAdapter da = new SqlDataAdapter(requete, new SqlConnection(ConnexionBD.Chaine));
+            String maRequeteSQL = "SELECT NoTypeUtilisateur, Identification FROM TypeUtilisateur";
+            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
+            SqlDataAdapter dataAdapterTypes = new SqlDataAdapter(maRequeteSQL, maConnexion);
 
-            if (ds.Tables.Contains("typeUtilisateur"))
-                ds.Tables.Remove("typeUtilisateur");
-            da.Fill(ds, "typeUtilisateur");
+            if (monDataSet.Tables.Contains("typeUtilisateur"))
+                monDataSet.Tables.Remove("typeUtilisateur");
 
-            cboType.DataSource = ds.Tables["typeUtilisateur"];
+            dataAdapterTypes.Fill(monDataSet, "typeUtilisateur");
+
+            cboType.DataSource = monDataSet.Tables["typeUtilisateur"];
             cboType.DisplayMember = "Identification";
             cboType.ValueMember = "NoTypeUtilisateur";
         }
 
         private void ChargerUtilisateurs()
         {
-            string requete = "SELECT NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur " +
-                             "FROM Utilisateur ORDER BY NoUtilisateur";
-            SqlDataAdapter da = new SqlDataAdapter(requete, new SqlConnection(ConnexionBD.Chaine));
+            String maRequeteSQL = "SELECT NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur " +
+                                  "FROM Utilisateur ORDER BY NoUtilisateur";
+            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
+            SqlDataAdapter dataAdapterUtilisateurs = new SqlDataAdapter(maRequeteSQL, maConnexion);
 
             dgvUtilisateurs.DataSource = null;
-            if (ds.Tables.Contains("utilisateur"))
-                ds.Tables.Remove("utilisateur");
-            da.Fill(ds, "utilisateur");
+            dgvUtilisateurs.Columns.Clear();
+            dgvUtilisateurs.AutoGenerateColumns = true;
 
-            dgvUtilisateurs.DataSource = ds.Tables["utilisateur"];
-            if (dgvUtilisateurs.Columns["MotDePasse"] != null)
-                dgvUtilisateurs.Columns["MotDePasse"].Visible = false;   // on n'affiche pas les mots de passe
+            if (monDataSet.Tables.Contains("utilisateur"))
+                monDataSet.Tables.Remove("utilisateur");
+
+            dataAdapterUtilisateurs.Fill(monDataSet, "utilisateur");
+
+            dgvUtilisateurs.DataSource = monDataSet.Tables["utilisateur"];
+
+            foreach (DataGridViewColumn col in dgvUtilisateurs.Columns)
+                if (col.DataPropertyName == "MotDePasse") col.Visible = false;
         }
 
         // =====================================================
@@ -99,21 +106,19 @@ namespace ProjetBaseDeDonneeIII
         private void AfficherSelection()
         {
             DataRow ligne = LigneSelectionnee();
-            if (ligne == null)
+            if (ligne != null)
             {
-                txtNo.Clear(); txtNom.Clear(); txtMdp.Clear();
-                btnModifier.Enabled = false;
-                btnSupprimer.Enabled = false;
-                cboType.Enabled = false;
-                MettreAJourEtat();
-                return;
+                txtNo.Text = ligne["NoUtilisateur"].ToString();
+                txtNom.Text = ligne["NomUtilisateur"].ToString();
+                txtMdp.Text = ligne["MotDePasse"].ToString();
+                cboType.SelectedValue = ligne["NoTypeUtilisateur"];
             }
-
-            txtNo.Text = ligne["NoUtilisateur"].ToString();
-            txtNom.Text = ligne["NomUtilisateur"].ToString();
-            txtMdp.Text = ligne["MotDePasse"].ToString();
-            cboType.SelectedValue = ligne["NoTypeUtilisateur"];
-
+            else
+            {
+                txtNo.Clear();
+                txtNom.Clear();
+                txtMdp.Clear();
+            }
             MettreAJourEtat();
         }
 
@@ -127,15 +132,14 @@ namespace ProjetBaseDeDonneeIII
             btnModifier.Enabled = aUneLigne && !modeAjout;
             btnSupprimer.Enabled = aUneLigne && !modeAjout;
             btnAnnuler.Enabled = modeAjout;
-            dgvUtilisateurs.Enabled = !modeAjout;
 
             // Le nom n'est modifiable que lors de l'ajout (unique et non modifiable ensuite)
             txtNom.ReadOnly = !modeAjout;
-            txtNom.Enabled = true;
-            txtMdp.Enabled = true;
+            txtNo.ReadOnly = true;
+
             // Un utilisateur ne peut pas modifier son propre type
             bool estMoi = aUneLigne && !modeAjout
-                          && (int)ligne["NoUtilisateur"] == Session.NoUtilisateur;
+                          && Convert.ToInt32(ligne["NoUtilisateur"]) == Session.NoUtilisateur;
             cboType.Enabled = modeAjout || (aUneLigne && !estMoi);
         }
 
@@ -169,14 +173,81 @@ namespace ProjetBaseDeDonneeIII
         }
 
         // =====================================================
-        //  Ajouter (1er clic : préparer, 2e clic : confirmer)
+        //  Requêtes en mode connecté (ExecuteScalar)
         // =====================================================
-        private int ProchainNumero()
+        private int ObtenirProchainNumero()
         {
-            object max = ds.Tables["utilisateur"].Compute("MAX(NoUtilisateur)", "");
-            return max == DBNull.Value ? 1 : Convert.ToInt32(max) + 1;
+            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
+            try
+            {
+                maConnexion.Open();
+                String maRequeteSQL = "SELECT MAX(NoUtilisateur) FROM Utilisateur";
+                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
+                object resultat = maCommande.ExecuteScalar();
+                return (resultat == null || resultat == DBNull.Value) ? 1 : Convert.ToInt32(resultat) + 1;
+            }
+            finally
+            {
+                maConnexion.Close();
+            }
         }
 
+        private bool NomExiste(String nom)
+        {
+            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
+            try
+            {
+                maConnexion.Open();
+                String maRequeteSQL = "SELECT COUNT(*) FROM Utilisateur WHERE NomUtilisateur = @nom";
+                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
+                maCommande.Parameters.AddWithValue("@nom", nom);
+                return Convert.ToInt32(maCommande.ExecuteScalar()) > 0;
+            }
+            finally
+            {
+                maConnexion.Close();
+            }
+        }
+
+        // =====================================================
+        //  Requête d'écriture dans une transaction (ExecuteNonQuery)
+        // =====================================================
+        private bool ExecuterRequete(String maRequeteSQL, params SqlParameter[] parametres)
+        {
+            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
+            SqlTransaction maTransaction = null;
+            try
+            {
+                maConnexion.Open();
+                maTransaction = maConnexion.BeginTransaction();
+
+                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
+                maCommande.Transaction = maTransaction;
+                maCommande.Parameters.AddRange(parametres);
+                maCommande.ExecuteNonQuery();
+
+                maTransaction.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (maTransaction != null)
+                {
+                    try { maTransaction.Rollback(); } catch { }
+                }
+                MessageBox.Show("Erreur lors de la sauvegarde dans la base de données :\n" + ex.Message,
+                                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            finally
+            {
+                maConnexion.Close();
+            }
+        }
+
+        // =====================================================
+        //  Ajouter (1er clic : préparer, 2e clic : confirmer)
+        // =====================================================
         private void btnAjouter_Click(object sender, EventArgs e)
         {
             if (!modeAjout) PreparerAjout();
@@ -185,58 +256,64 @@ namespace ProjetBaseDeDonneeIII
 
         private void PreparerAjout()
         {
-            if (ds.Tables["typeUtilisateur"].Rows.Count == 0)
+            try
             {
-                MessageBox.Show("Aucun type d'utilisateur n'existe dans la base.", "Erreur",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                int no = ObtenirProchainNumero();      // numéro automatique
+
+                modeAjout = true;
+                txtNo.Text = no.ToString();
+                txtNom.Clear();
+                txtMdp.Clear();
+                cboType.SelectedIndex = 0;
+
+                MettreAJourEtat();
+                txtNom.Focus();
             }
-
-            modeAjout = true;
-            txtNo.Text = ProchainNumero().ToString();   // numéro automatique, non modifiable
-            txtNom.Clear();
-            txtMdp.Clear();
-            cboType.SelectedIndex = 0;
-
-            MettreAJourEtat();
-            txtNom.Focus();
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur :\n" + ex.Message, "Erreur",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void ConfirmerAjout()
         {
             if (!ChampsValides()) return;
 
-            string nom = txtNom.Text.Trim();
-            if (NomExiste(nom))
+            String nom = txtNom.Text.Trim();
+
+            try
             {
-                MessageBox.Show("Ce nom d'utilisateur existe déjà.", "Doublon",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtNom.Focus();
+                if (NomExiste(nom))
+                {
+                    MessageBox.Show("Ce nom d'utilisateur existe déjà.", "Doublon",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtNom.Focus();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur :\n" + ex.Message, "Erreur",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             int no = int.Parse(txtNo.Text);
-            string mdp = txtMdp.Text;
-            int type = Convert.ToInt32(cboType.SelectedValue);
 
-            // 1. Base de données (avec transaction)
-            bool ok = ExecuterTransaction(
+            bool ok = ExecuterRequete(
                 "INSERT INTO Utilisateur (NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur) " +
                 "VALUES (@no, @nom, @mdp, @type)",
                 new SqlParameter("@no", no),
                 new SqlParameter("@nom", nom),
-                new SqlParameter("@mdp", mdp),
-                new SqlParameter("@type", type));
+                new SqlParameter("@mdp", txtMdp.Text),
+                new SqlParameter("@type", Convert.ToInt32(cboType.SelectedValue)));
             if (!ok) return;
 
-            // 2. Mémoire (DataTable)
-            DataTable table = ds.Tables["utilisateur"];
-            table.Rows.Add(no, nom, mdp, type);
-            table.AcceptChanges();
-
             modeAjout = false;
-            MettreAJourEtat();
+            ChargerUtilisateurs();                     // met à jour la mémoire (DataTable)
             SelectionnerNumero(no);
+
             MessageBox.Show("Utilisateur ajouté.", "Succès",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -245,14 +322,6 @@ namespace ProjetBaseDeDonneeIII
         {
             modeAjout = false;
             AfficherSelection();
-        }
-
-        private bool NomExiste(string nom)
-        {
-            foreach (DataRow l in ds.Tables["utilisateur"].Rows)
-                if (string.Equals(l["NomUtilisateur"].ToString(), nom, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            return false;
         }
 
         // =====================================================
@@ -264,34 +333,29 @@ namespace ProjetBaseDeDonneeIII
             if (modeAjout || ligne == null) return;
             if (!ChampsValides()) return;
 
-            int no = (int)ligne["NoUtilisateur"];
-            string mdp = txtMdp.Text;
+            int no = Convert.ToInt32(ligne["NoUtilisateur"]);
+            int typeActuel = Convert.ToInt32(ligne["NoTypeUtilisateur"]);
 
             // Le type ne change que pour un autre utilisateur
-            int type = (no == Session.NoUtilisateur)
-                       ? (int)ligne["NoTypeUtilisateur"]
-                       : Convert.ToInt32(cboType.SelectedValue);
+            int type = (no == Session.NoUtilisateur) ? typeActuel : Convert.ToInt32(cboType.SelectedValue);
 
-            if (mdp == ligne["MotDePasse"].ToString() && type == (int)ligne["NoTypeUtilisateur"])
+            if (txtMdp.Text == ligne["MotDePasse"].ToString() && type == typeActuel)
             {
                 MessageBox.Show("Aucune modification à enregistrer.", "Information",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // 1. Base de données (avec transaction)
-            bool ok = ExecuterTransaction(
+            bool ok = ExecuterRequete(
                 "UPDATE Utilisateur SET MotDePasse = @mdp, NoTypeUtilisateur = @type " +
                 "WHERE NoUtilisateur = @no",
-                new SqlParameter("@mdp", mdp),
+                new SqlParameter("@mdp", txtMdp.Text),
                 new SqlParameter("@type", type),
                 new SqlParameter("@no", no));
             if (!ok) return;
 
-            // 2. Mémoire (DataTable)
-            ligne["MotDePasse"] = mdp;
-            ligne["NoTypeUtilisateur"] = type;
-            ligne.AcceptChanges();
+            ChargerUtilisateurs();                     // met à jour la mémoire (DataTable)
+            SelectionnerNumero(no);
 
             MessageBox.Show("Utilisateur modifié.", "Succès",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -305,8 +369,8 @@ namespace ProjetBaseDeDonneeIII
             DataRow ligne = LigneSelectionnee();
             if (modeAjout || ligne == null) return;
 
-            int no = (int)ligne["NoUtilisateur"];
-            string nom = ligne["NomUtilisateur"].ToString();
+            int no = Convert.ToInt32(ligne["NoUtilisateur"]);
+            String nom = ligne["NomUtilisateur"].ToString();
 
             if (no == Session.NoUtilisateur)
             {
@@ -325,53 +389,13 @@ namespace ProjetBaseDeDonneeIII
                                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
-            // 1. Base de données (avec transaction)
-            bool ok = ExecuterTransaction(
+            bool ok = ExecuterRequete(
                 "DELETE FROM Utilisateur WHERE NoUtilisateur = @no",
                 new SqlParameter("@no", no));
             if (!ok) return;
 
-            // 2. Mémoire (DataTable)
-            ligne.Delete();
-            ds.Tables["utilisateur"].AcceptChanges();
-
+            ChargerUtilisateurs();                     // met à jour la mémoire (DataTable)
             AfficherSelection();
-        }
-
-        // =====================================================
-        //  Mode connecté : requête dans une transaction (Labo 4, section 3.3)
-        // =====================================================
-        private bool ExecuterTransaction(string requete, params SqlParameter[] parametres)
-        {
-            SqlConnection maConnexion = new SqlConnection(ConnexionBD.Chaine);
-            SqlTransaction maTransaction = null;
-            try
-            {
-                maConnexion.Open();
-                maTransaction = maConnexion.BeginTransaction();
-
-                SqlCommand maCommande = new SqlCommand(requete, maConnexion);
-                maCommande.Transaction = maTransaction;          // la commande fait partie de la transaction
-                maCommande.Parameters.AddRange(parametres);
-                maCommande.ExecuteNonQuery();
-
-                maTransaction.Commit();                          // tout a réussi
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (maTransaction != null)
-                {
-                    try { maTransaction.Rollback(); } catch { }  // annule ce qui a été exécuté
-                }
-                MessageBox.Show("Erreur lors de la sauvegarde dans la base de données :\n" + ex.Message,
-                                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            finally
-            {
-                maConnexion.Close();                             // IMPORTANT DE FERMER LA CONNEXION
-            }
         }
 
         private void SelectionnerNumero(int no)
@@ -381,7 +405,7 @@ namespace ProjetBaseDeDonneeIII
                 DataRowView vue = r.DataBoundItem as DataRowView;
                 if (vue != null && Convert.ToInt32(vue.Row["NoUtilisateur"]) == no)
                 {
-                    dgvUtilisateurs.CurrentCell = r.Cells[0];   // par position, pas par nom
+                    dgvUtilisateurs.CurrentCell = r.Cells[0];
                     r.Selected = true;
                     break;
                 }

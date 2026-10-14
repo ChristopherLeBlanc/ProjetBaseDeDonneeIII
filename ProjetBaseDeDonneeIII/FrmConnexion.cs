@@ -1,31 +1,21 @@
 ﻿using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace ProjetBaseDeDonneeIII
 {
     public partial class FrmConnexion : Form
     {
+        string maChaineDeConnexion = ConnexionBD.Chaine;
+        SqlConnection maConnexion = new SqlConnection();
+
         private int nbEssais = 0;
         private const int MAX_ESSAIS = 3;
 
         public FrmConnexion()
         {
             InitializeComponent();
-        }
-
-        private void FrmConnexion_Load(object sender, EventArgs e)
-        {
-            try
-            {
-                utilisateurTableAdapter.Fill(bDB56Projet1CKWDataSet.Utilisateur);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Impossible de se connecter à la base de données :\n" + ex.Message,
-                                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                DialogResult = DialogResult.Cancel;
-                Close();
-            }
         }
 
         private void btnConnexion_Click(object sender, EventArgs e)
@@ -40,17 +30,50 @@ namespace ProjetBaseDeDonneeIII
                 return;
             }
 
-            BDB56Projet1CKWDataSet.UtilisateurRow trouve = null;
-            foreach (BDB56Projet1CKWDataSet.UtilisateurRow ligne in bDB56Projet1CKWDataSet.Utilisateur)
+            object noUtilisateur = null;
+            object noType = null;
+
+            try
             {
-                if (ligne.NomUtilisateur == nom && ligne.MotDePasse == mdp)
+                maConnexion.ConnectionString = maChaineDeConnexion;
+                maConnexion.Open();
+
+                // 1re requête : le numéro de l'utilisateur
+                String maRequeteSQL = "SELECT NoUtilisateur FROM Utilisateur " +
+                                      "WHERE NomUtilisateur = @nom AND MotDePasse = @mdp";
+                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
+
+                SqlParameter parametreNom = new SqlParameter("@nom", SqlDbType.VarChar, 30);
+                maCommande.Parameters.Add(parametreNom);
+                parametreNom.Value = nom;
+
+                SqlParameter parametreMdp = new SqlParameter("@mdp", SqlDbType.VarChar, 100);
+                maCommande.Parameters.Add(parametreMdp);
+                parametreMdp.Value = mdp;
+
+                noUtilisateur = maCommande.ExecuteScalar();
+
+                // 2e requête : le type de l'utilisateur (seulement s'il existe)
+                if (noUtilisateur != null)
                 {
-                    trouve = ligne;
-                    break;
+                    String requeteType = "SELECT NoTypeUtilisateur FROM Utilisateur WHERE NoUtilisateur = @no";
+                    SqlCommand commandeType = new SqlCommand(requeteType, maConnexion);
+                    commandeType.Parameters.AddWithValue("@no", noUtilisateur);
+                    noType = commandeType.ExecuteScalar();
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Impossible de se connecter à la base de données :\n" + ex.Message,
+                                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;   // une erreur de base de données n'est pas un essai raté
+            }
+            finally
+            {
+                maConnexion.Close();   // IMPORTANT DE FERMER LA CONNEXION
+            }
 
-            if (trouve == null)
+            if (noUtilisateur == null)
             {
                 nbEssais++;
                 if (nbEssais >= MAX_ESSAIS)
@@ -68,9 +91,9 @@ namespace ProjetBaseDeDonneeIII
                 return;
             }
 
-            Session.NoUtilisateur = trouve.NoUtilisateur;
-            Session.NoType = trouve.NoTypeUtilisateur;
-            Session.NomUtilisateur = trouve.NomUtilisateur;
+            Session.NoUtilisateur = Convert.ToInt32(noUtilisateur);
+            Session.NoType = Convert.ToInt32(noType);
+            Session.NomUtilisateur = nom;
 
             DialogResult = DialogResult.OK;
             Close();
