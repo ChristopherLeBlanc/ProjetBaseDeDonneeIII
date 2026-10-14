@@ -48,20 +48,8 @@
             this.bindingNavigatorMoveLastItem = new System.Windows.Forms.ToolStripButton();
             this.bindingNavigatorSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.clientBindingNavigatorSaveItem = new System.Windows.Forms.ToolStripButton();
-            this.dgvClients = new System.Windows.Forms.DataGridView();
-            this.noClientDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.nomDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.prenomDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.villeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.paysDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.adresseDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.codePostalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dateInscriptionDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.inviteBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.dgvInvites = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fKNoClientInvBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -90,13 +78,27 @@
             this.btnSupprimerInvite = new System.Windows.Forms.Button();
             this.btnModifierInvite = new System.Windows.Forms.Button();
             this.btnAjouterInvite = new System.Windows.Forms.Button();
+            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgvInvites = new System.Windows.Forms.DataGridView();
+            this.dateInscriptionDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.codePostalDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.adresseDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.paysDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.villeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.prenomDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.nomDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.noClientDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgvClients = new System.Windows.Forms.DataGridView();
             ((System.ComponentModel.ISupportInitialize)(this.bDB56Projet1CKWDataSet)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.clientBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.clientBindingNavigator)).BeginInit();
             this.clientBindingNavigator.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvClients)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inviteBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fKNoClientInvBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInvites)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvClients)).BeginInit();
             this.SuspendLayout();
             // 
             // bDB56Projet1CKWDataSet
@@ -259,126 +261,15 @@
             this.clientBindingNavigatorSaveItem.Size = new System.Drawing.Size(23, 22);
             this.clientBindingNavigatorSaveItem.Text = "Save Data";
             // 
-            // dgvClients
-            // 
-            this.dgvClients.AllowUserToAddRows = false;
-            this.dgvClients.AllowUserToDeleteRows = false;
-            this.dgvClients.AutoGenerateColumns = false;
-            this.dgvClients.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvClients.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.noClientDataGridViewTextBoxColumn,
-            this.nomDataGridViewTextBoxColumn,
-            this.prenomDataGridViewTextBoxColumn,
-            this.villeDataGridViewTextBoxColumn,
-            this.paysDataGridViewTextBoxColumn,
-            this.adresseDataGridViewTextBoxColumn,
-            this.codePostalDataGridViewTextBoxColumn,
-            this.dateInscriptionDataGridViewTextBoxColumn});
-            this.dgvClients.DataSource = this.clientBindingSource;
-            this.dgvClients.Location = new System.Drawing.Point(12, 28);
-            this.dgvClients.Name = "dgvClients";
-            this.dgvClients.ReadOnly = true;
-            this.dgvClients.Size = new System.Drawing.Size(844, 209);
-            this.dgvClients.TabIndex = 1;
-            // 
-            // noClientDataGridViewTextBoxColumn
-            // 
-            this.noClientDataGridViewTextBoxColumn.DataPropertyName = "NoClient";
-            this.noClientDataGridViewTextBoxColumn.HeaderText = "NoClient";
-            this.noClientDataGridViewTextBoxColumn.Name = "noClientDataGridViewTextBoxColumn";
-            this.noClientDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // nomDataGridViewTextBoxColumn
-            // 
-            this.nomDataGridViewTextBoxColumn.DataPropertyName = "Nom";
-            this.nomDataGridViewTextBoxColumn.HeaderText = "Nom";
-            this.nomDataGridViewTextBoxColumn.Name = "nomDataGridViewTextBoxColumn";
-            this.nomDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // prenomDataGridViewTextBoxColumn
-            // 
-            this.prenomDataGridViewTextBoxColumn.DataPropertyName = "Prenom";
-            this.prenomDataGridViewTextBoxColumn.HeaderText = "Prenom";
-            this.prenomDataGridViewTextBoxColumn.Name = "prenomDataGridViewTextBoxColumn";
-            this.prenomDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // villeDataGridViewTextBoxColumn
-            // 
-            this.villeDataGridViewTextBoxColumn.DataPropertyName = "Ville";
-            this.villeDataGridViewTextBoxColumn.HeaderText = "Ville";
-            this.villeDataGridViewTextBoxColumn.Name = "villeDataGridViewTextBoxColumn";
-            this.villeDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // paysDataGridViewTextBoxColumn
-            // 
-            this.paysDataGridViewTextBoxColumn.DataPropertyName = "Pays";
-            this.paysDataGridViewTextBoxColumn.HeaderText = "Pays";
-            this.paysDataGridViewTextBoxColumn.Name = "paysDataGridViewTextBoxColumn";
-            this.paysDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // adresseDataGridViewTextBoxColumn
-            // 
-            this.adresseDataGridViewTextBoxColumn.DataPropertyName = "Adresse";
-            this.adresseDataGridViewTextBoxColumn.HeaderText = "Adresse";
-            this.adresseDataGridViewTextBoxColumn.Name = "adresseDataGridViewTextBoxColumn";
-            this.adresseDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // codePostalDataGridViewTextBoxColumn
-            // 
-            this.codePostalDataGridViewTextBoxColumn.DataPropertyName = "CodePostal";
-            this.codePostalDataGridViewTextBoxColumn.HeaderText = "CodePostal";
-            this.codePostalDataGridViewTextBoxColumn.Name = "codePostalDataGridViewTextBoxColumn";
-            this.codePostalDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // dateInscriptionDataGridViewTextBoxColumn
-            // 
-            this.dateInscriptionDataGridViewTextBoxColumn.DataPropertyName = "DateInscription";
-            this.dateInscriptionDataGridViewTextBoxColumn.HeaderText = "DateInscription";
-            this.dateInscriptionDataGridViewTextBoxColumn.Name = "dateInscriptionDataGridViewTextBoxColumn";
-            this.dateInscriptionDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
             // inviteBindingSource
             // 
             this.inviteBindingSource.DataMember = "Invite";
             this.inviteBindingSource.DataSource = this.bDB56Projet1CKWDataSet;
             // 
-            // dgvInvites
+            // fKNoClientInvBindingSource
             // 
-            this.dgvInvites.AllowUserToAddRows = false;
-            this.dgvInvites.AllowUserToDeleteRows = false;
-            this.dgvInvites.AutoGenerateColumns = false;
-            this.dgvInvites.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvInvites.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn11,
-            this.dataGridViewTextBoxColumn9,
-            this.dataGridViewTextBoxColumn10});
-            this.dgvInvites.DataSource = this.inviteBindingSource;
-            this.dgvInvites.Location = new System.Drawing.Point(862, 28);
-            this.dgvInvites.Name = "dgvInvites";
-            this.dgvInvites.ReadOnly = true;
-            this.dgvInvites.Size = new System.Drawing.Size(344, 209);
-            this.dgvInvites.TabIndex = 2;
-            // 
-            // dataGridViewTextBoxColumn11
-            // 
-            this.dataGridViewTextBoxColumn11.DataPropertyName = "NoClient";
-            this.dataGridViewTextBoxColumn11.HeaderText = "NoClient";
-            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
-            this.dataGridViewTextBoxColumn11.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn9
-            // 
-            this.dataGridViewTextBoxColumn9.DataPropertyName = "NoInvite";
-            this.dataGridViewTextBoxColumn9.HeaderText = "NoInvite";
-            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
-            this.dataGridViewTextBoxColumn9.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn10
-            // 
-            this.dataGridViewTextBoxColumn10.DataPropertyName = "NomPrenom";
-            this.dataGridViewTextBoxColumn10.HeaderText = "NomPrenom";
-            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
-            this.dataGridViewTextBoxColumn10.ReadOnly = true;
+            this.fKNoClientInvBindingSource.DataMember = "FK_NoClientInv";
+            this.fKNoClientInvBindingSource.DataSource = this.clientBindingSource;
             // 
             // label1
             // 
@@ -454,6 +345,7 @@
             // 
             // txtNoClient
             // 
+            this.txtNoClient.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "NoClient", true));
             this.txtNoClient.Location = new System.Drawing.Point(142, 244);
             this.txtNoClient.MaxLength = 30;
             this.txtNoClient.Name = "txtNoClient";
@@ -463,6 +355,7 @@
             // 
             // txtDateInscription
             // 
+            this.txtDateInscription.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "DateInscription", true));
             this.txtDateInscription.Location = new System.Drawing.Point(142, 475);
             this.txtDateInscription.Name = "txtDateInscription";
             this.txtDateInscription.ReadOnly = true;
@@ -471,6 +364,7 @@
             // 
             // txtCodePostal
             // 
+            this.txtCodePostal.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "CodePostal", true));
             this.txtCodePostal.Location = new System.Drawing.Point(142, 435);
             this.txtCodePostal.MaxLength = 30;
             this.txtCodePostal.Name = "txtCodePostal";
@@ -479,6 +373,7 @@
             // 
             // txtAdresse
             // 
+            this.txtAdresse.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "Adresse", true));
             this.txtAdresse.Location = new System.Drawing.Point(142, 399);
             this.txtAdresse.MaxLength = 50;
             this.txtAdresse.Name = "txtAdresse";
@@ -487,6 +382,7 @@
             // 
             // txtPays
             // 
+            this.txtPays.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "Pays", true));
             this.txtPays.Location = new System.Drawing.Point(142, 365);
             this.txtPays.MaxLength = 15;
             this.txtPays.Name = "txtPays";
@@ -495,6 +391,7 @@
             // 
             // txtVille
             // 
+            this.txtVille.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "Ville", true));
             this.txtVille.Location = new System.Drawing.Point(142, 335);
             this.txtVille.MaxLength = 30;
             this.txtVille.Name = "txtVille";
@@ -503,6 +400,7 @@
             // 
             // txtPrenom
             // 
+            this.txtPrenom.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "Prenom", true));
             this.txtPrenom.Location = new System.Drawing.Point(142, 306);
             this.txtPrenom.MaxLength = 30;
             this.txtPrenom.Name = "txtPrenom";
@@ -511,6 +409,7 @@
             // 
             // txtNom
             // 
+            this.txtNom.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.clientBindingSource, "Nom", true));
             this.txtNom.Location = new System.Drawing.Point(142, 274);
             this.txtNom.MaxLength = 30;
             this.txtNom.Name = "txtNom";
@@ -525,6 +424,7 @@
             this.btnAjouterClient.TabIndex = 20;
             this.btnAjouterClient.Text = "Ajouter Client";
             this.btnAjouterClient.UseVisualStyleBackColor = true;
+            this.btnAjouterClient.Click += new System.EventHandler(this.btnAjouterClient_Click);
             // 
             // btnModifierClient
             // 
@@ -534,6 +434,7 @@
             this.btnModifierClient.TabIndex = 21;
             this.btnModifierClient.Text = "Modifier Client";
             this.btnModifierClient.UseVisualStyleBackColor = true;
+            this.btnModifierClient.Click += new System.EventHandler(this.btnModifierClient_Click);
             // 
             // btnSupprimerClient
             // 
@@ -543,6 +444,7 @@
             this.btnSupprimerClient.TabIndex = 22;
             this.btnSupprimerClient.Text = "Supprimer Client";
             this.btnSupprimerClient.UseVisualStyleBackColor = true;
+            this.btnSupprimerClient.Click += new System.EventHandler(this.btnSupprimerClient_Click);
             // 
             // btnAnnulerClient
             // 
@@ -552,6 +454,7 @@
             this.btnAnnulerClient.TabIndex = 23;
             this.btnAnnulerClient.Text = "Annuler";
             this.btnAnnulerClient.UseVisualStyleBackColor = true;
+            this.btnAnnulerClient.Click += new System.EventHandler(this.btnAnnulerClient_Click);
             // 
             // label9
             // 
@@ -573,6 +476,7 @@
             // 
             // txtNomPrenomInvite
             // 
+            this.txtNomPrenomInvite.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.fKNoClientInvBindingSource, "NomPrenom", true));
             this.txtNomPrenomInvite.Location = new System.Drawing.Point(1014, 289);
             this.txtNomPrenomInvite.MaxLength = 45;
             this.txtNomPrenomInvite.Name = "txtNomPrenomInvite";
@@ -581,6 +485,7 @@
             // 
             // txtNoInvite
             // 
+            this.txtNoInvite.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.fKNoClientInvBindingSource, "NoInvite", true));
             this.txtNoInvite.Location = new System.Drawing.Point(1014, 254);
             this.txtNoInvite.MaxLength = 30;
             this.txtNoInvite.Name = "txtNoInvite";
@@ -596,6 +501,7 @@
             this.btnAnnulerInvite.TabIndex = 28;
             this.btnAnnulerInvite.Text = "Annuler";
             this.btnAnnulerInvite.UseVisualStyleBackColor = true;
+            this.btnAnnulerInvite.Click += new System.EventHandler(this.btnAnnulerInvite_Click);
             // 
             // btnSupprimerInvite
             // 
@@ -605,6 +511,7 @@
             this.btnSupprimerInvite.TabIndex = 29;
             this.btnSupprimerInvite.Text = "Supprimer Invite";
             this.btnSupprimerInvite.UseVisualStyleBackColor = true;
+            this.btnSupprimerInvite.Click += new System.EventHandler(this.btnSupprimerInvite_Click);
             // 
             // btnModifierInvite
             // 
@@ -614,6 +521,7 @@
             this.btnModifierInvite.TabIndex = 30;
             this.btnModifierInvite.Text = "Modifier Invite";
             this.btnModifierInvite.UseVisualStyleBackColor = true;
+            this.btnModifierInvite.Click += new System.EventHandler(this.btnModifierInvite_Click);
             // 
             // btnAjouterInvite
             // 
@@ -623,6 +531,123 @@
             this.btnAjouterInvite.TabIndex = 31;
             this.btnAjouterInvite.Text = "Ajouter Invite";
             this.btnAjouterInvite.UseVisualStyleBackColor = true;
+            this.btnAjouterInvite.Click += new System.EventHandler(this.btnAjouterInvite_Click);
+            // 
+            // dataGridViewTextBoxColumn10
+            // 
+            this.dataGridViewTextBoxColumn10.DataPropertyName = "NomPrenom";
+            this.dataGridViewTextBoxColumn10.HeaderText = "NomPrenom";
+            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
+            this.dataGridViewTextBoxColumn10.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn9
+            // 
+            this.dataGridViewTextBoxColumn9.DataPropertyName = "NoInvite";
+            this.dataGridViewTextBoxColumn9.HeaderText = "NoInvite";
+            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
+            this.dataGridViewTextBoxColumn9.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn11
+            // 
+            this.dataGridViewTextBoxColumn11.DataPropertyName = "NoClient";
+            this.dataGridViewTextBoxColumn11.HeaderText = "NoClient";
+            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
+            this.dataGridViewTextBoxColumn11.ReadOnly = true;
+            // 
+            // dgvInvites
+            // 
+            this.dgvInvites.AllowUserToAddRows = false;
+            this.dgvInvites.AllowUserToDeleteRows = false;
+            this.dgvInvites.AutoGenerateColumns = false;
+            this.dgvInvites.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvInvites.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn11,
+            this.dataGridViewTextBoxColumn9,
+            this.dataGridViewTextBoxColumn10});
+            this.dgvInvites.DataSource = this.fKNoClientInvBindingSource;
+            this.dgvInvites.Location = new System.Drawing.Point(862, 28);
+            this.dgvInvites.Name = "dgvInvites";
+            this.dgvInvites.ReadOnly = true;
+            this.dgvInvites.Size = new System.Drawing.Size(344, 209);
+            this.dgvInvites.TabIndex = 2;
+            // 
+            // dateInscriptionDataGridViewTextBoxColumn
+            // 
+            this.dateInscriptionDataGridViewTextBoxColumn.DataPropertyName = "DateInscription";
+            this.dateInscriptionDataGridViewTextBoxColumn.HeaderText = "DateInscription";
+            this.dateInscriptionDataGridViewTextBoxColumn.Name = "dateInscriptionDataGridViewTextBoxColumn";
+            this.dateInscriptionDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // codePostalDataGridViewTextBoxColumn
+            // 
+            this.codePostalDataGridViewTextBoxColumn.DataPropertyName = "CodePostal";
+            this.codePostalDataGridViewTextBoxColumn.HeaderText = "CodePostal";
+            this.codePostalDataGridViewTextBoxColumn.Name = "codePostalDataGridViewTextBoxColumn";
+            this.codePostalDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // adresseDataGridViewTextBoxColumn
+            // 
+            this.adresseDataGridViewTextBoxColumn.DataPropertyName = "Adresse";
+            this.adresseDataGridViewTextBoxColumn.HeaderText = "Adresse";
+            this.adresseDataGridViewTextBoxColumn.Name = "adresseDataGridViewTextBoxColumn";
+            this.adresseDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // paysDataGridViewTextBoxColumn
+            // 
+            this.paysDataGridViewTextBoxColumn.DataPropertyName = "Pays";
+            this.paysDataGridViewTextBoxColumn.HeaderText = "Pays";
+            this.paysDataGridViewTextBoxColumn.Name = "paysDataGridViewTextBoxColumn";
+            this.paysDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // villeDataGridViewTextBoxColumn
+            // 
+            this.villeDataGridViewTextBoxColumn.DataPropertyName = "Ville";
+            this.villeDataGridViewTextBoxColumn.HeaderText = "Ville";
+            this.villeDataGridViewTextBoxColumn.Name = "villeDataGridViewTextBoxColumn";
+            this.villeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // prenomDataGridViewTextBoxColumn
+            // 
+            this.prenomDataGridViewTextBoxColumn.DataPropertyName = "Prenom";
+            this.prenomDataGridViewTextBoxColumn.HeaderText = "Prenom";
+            this.prenomDataGridViewTextBoxColumn.Name = "prenomDataGridViewTextBoxColumn";
+            this.prenomDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // nomDataGridViewTextBoxColumn
+            // 
+            this.nomDataGridViewTextBoxColumn.DataPropertyName = "Nom";
+            this.nomDataGridViewTextBoxColumn.HeaderText = "Nom";
+            this.nomDataGridViewTextBoxColumn.Name = "nomDataGridViewTextBoxColumn";
+            this.nomDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // noClientDataGridViewTextBoxColumn
+            // 
+            this.noClientDataGridViewTextBoxColumn.DataPropertyName = "NoClient";
+            this.noClientDataGridViewTextBoxColumn.HeaderText = "NoClient";
+            this.noClientDataGridViewTextBoxColumn.Name = "noClientDataGridViewTextBoxColumn";
+            this.noClientDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // dgvClients
+            // 
+            this.dgvClients.AllowUserToAddRows = false;
+            this.dgvClients.AllowUserToDeleteRows = false;
+            this.dgvClients.AutoGenerateColumns = false;
+            this.dgvClients.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvClients.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.noClientDataGridViewTextBoxColumn,
+            this.nomDataGridViewTextBoxColumn,
+            this.prenomDataGridViewTextBoxColumn,
+            this.villeDataGridViewTextBoxColumn,
+            this.paysDataGridViewTextBoxColumn,
+            this.adresseDataGridViewTextBoxColumn,
+            this.codePostalDataGridViewTextBoxColumn,
+            this.dateInscriptionDataGridViewTextBoxColumn});
+            this.dgvClients.DataSource = this.clientBindingSource;
+            this.dgvClients.Location = new System.Drawing.Point(12, 28);
+            this.dgvClients.Name = "dgvClients";
+            this.dgvClients.ReadOnly = true;
+            this.dgvClients.Size = new System.Drawing.Size(844, 209);
+            this.dgvClients.TabIndex = 1;
             // 
             // FrmClientsInvites
             // 
@@ -662,15 +687,15 @@
             this.Controls.Add(this.clientBindingNavigator);
             this.Name = "FrmClientsInvites";
             this.Text = "FrmClientsInvites";
-            this.Load += new System.EventHandler(this.FrmClientsInvites_Load);
             ((System.ComponentModel.ISupportInitialize)(this.bDB56Projet1CKWDataSet)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.clientBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.clientBindingNavigator)).EndInit();
             this.clientBindingNavigator.ResumeLayout(false);
             this.clientBindingNavigator.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvClients)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inviteBindingSource)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fKNoClientInvBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInvites)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvClients)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -695,11 +720,8 @@
         private System.Windows.Forms.ToolStripButton bindingNavigatorMoveLastItem;
         private System.Windows.Forms.ToolStripSeparator bindingNavigatorSeparator2;
         private System.Windows.Forms.ToolStripButton clientBindingNavigatorSaveItem;
-        private System.Windows.Forms.DataGridView dgvClients;
         private BDB56Projet1CKWDataSetTableAdapters.InviteTableAdapter inviteTableAdapter;
         private System.Windows.Forms.BindingSource inviteBindingSource;
-        private System.Windows.Forms.DataGridView dgvInvites;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
@@ -716,16 +738,6 @@
         private System.Windows.Forms.TextBox txtVille;
         private System.Windows.Forms.TextBox txtPrenom;
         private System.Windows.Forms.TextBox txtNom;
-        private System.Windows.Forms.DataGridViewTextBoxColumn noClientDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn nomDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn prenomDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn villeDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn paysDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn adresseDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn codePostalDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dateInscriptionDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
         private System.Windows.Forms.Button btnAjouterClient;
         private System.Windows.Forms.Button btnModifierClient;
         private System.Windows.Forms.Button btnSupprimerClient;
@@ -738,5 +750,19 @@
         private System.Windows.Forms.Button btnSupprimerInvite;
         private System.Windows.Forms.Button btnModifierInvite;
         private System.Windows.Forms.Button btnAjouterInvite;
+        private System.Windows.Forms.BindingSource fKNoClientInvBindingSource;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
+        private System.Windows.Forms.DataGridView dgvInvites;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dateInscriptionDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn codePostalDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn adresseDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn paysDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn villeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn prenomDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn nomDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn noClientDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridView dgvClients;
     }
 }
