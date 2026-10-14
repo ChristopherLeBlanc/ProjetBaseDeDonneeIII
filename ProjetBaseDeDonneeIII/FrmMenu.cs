@@ -18,6 +18,7 @@ namespace ProjetBaseDeDonneeIII
 
 
         FrmUtilisateurs fU = new FrmUtilisateurs();
+        FrmClientsInvites fCI = new FrmClientsInvites();
         public FrmMenu()
         {
             InitializeComponent();
@@ -60,7 +61,9 @@ namespace ProjetBaseDeDonneeIII
 
         private void mnuClients_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fCI.ShowDialog();
+            this.Show();
         }
 
         private void mnuAssistants_Click(object sender, EventArgs e)
