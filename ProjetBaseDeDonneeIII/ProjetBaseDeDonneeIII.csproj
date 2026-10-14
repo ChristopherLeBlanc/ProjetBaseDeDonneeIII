@@ -52,6 +52,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>BDB56Projet1CKWDataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="ConnexionBD.cs" />
     <Compile Include="FrmAssistantsSoins.cs">
       <SubType>Form</SubType>
     </Compile>
