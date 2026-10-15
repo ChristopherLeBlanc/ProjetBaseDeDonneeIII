@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
@@ -9,408 +10,404 @@ namespace ProjetBaseDeDonneeIII
     {
         private const int ADMIN_INITIAL = 1;
 
-        String maChaineDeConnexion = ConnexionBD.Chaine;
-        DataSet monDataSet = new DataSet();
         private bool modeAjout = false;
+        private bool modeModification = false;
 
         public FrmUtilisateurs()
         {
             InitializeComponent();
 
-            Load += FrmUtilisateurs_Load;
-            btnAjouter.Click += btnAjouter_Click;
-            btnModifier.Click += btnModifier_Click;
-            btnSupprimer.Click += btnSupprimer_Click;
-            btnAnnuler.Click += btnAnnuler_Click;
-            dgvUtilisateurs.SelectionChanged += dgvUtilisateurs_SelectionChanged;
+            this.Load -= FrmUtilisateurs_Load;
+            this.Load += FrmUtilisateurs_Load;
         }
 
-        // =====================================================
-        //  Chargement (mode déconnecté : DataAdapter + Fill)
-        // =====================================================
         private void FrmUtilisateurs_Load(object sender, EventArgs e)
         {
+            ChargerTypes();
+
+            this.utilisateurTableAdapter.Fill(
+                this.bDB56Projet1CKWDataSet.Utilisateur);
+
+            // Relier les champs à l'utilisateur courant.
             txtNo.DataBindings.Clear();
             txtNom.DataBindings.Clear();
             txtMdp.DataBindings.Clear();
             cboType.DataBindings.Clear();
 
-            try
-            {
-                ChargerTypes();
-                ChargerUtilisateurs();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur de chargement :\n" + ex.Message, "Erreur",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Close();
-                return;
-            }
-            AfficherSelection();
+            txtNo.DataBindings.Add(
+                "Text", utilisateurBindingSource, "NoUtilisateur",
+                true, DataSourceUpdateMode.OnPropertyChanged);
+
+            txtNom.DataBindings.Add(
+                "Text", utilisateurBindingSource, "NomUtilisateur",
+                true, DataSourceUpdateMode.OnPropertyChanged);
+
+            txtMdp.DataBindings.Add(
+                "Text", utilisateurBindingSource, "MotDePasse",
+                true, DataSourceUpdateMode.OnPropertyChanged);
+
+            cboType.DataBindings.Add(
+                "SelectedValue", utilisateurBindingSource, "NoTypeUtilisateur",
+                true, DataSourceUpdateMode.OnPropertyChanged);
+
+            txtNo.ReadOnly = true;
+
+            // Détecter les modifications faites par l'utilisateur.
+            txtMdp.TextChanged += txtMdp_TextChanged;
+            cboType.SelectionChangeCommitted += cboType_SelectionChangeCommitted;
+            utilisateurBindingSource.CurrentChanged +=
+                utilisateurBindingSource_CurrentChanged;
+
+            MasquerMotDePasse();
+            utilisateurBindingSource.ResetBindings(false);
+            MettreAJourControles();
         }
 
         private void ChargerTypes()
         {
-            String maRequeteSQL = "SELECT NoTypeUtilisateur, Identification FROM TypeUtilisateur";
-            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
-            SqlDataAdapter dataAdapterTypes = new SqlDataAdapter(maRequeteSQL, maConnexion);
+            using (SqlConnection connexion =
+                new SqlConnection(ConnexionBD.Chaine))
+            {
+                connexion.Open();
 
-            if (monDataSet.Tables.Contains("typeUtilisateur"))
-                monDataSet.Tables.Remove("typeUtilisateur");
+                string requete =
+                    "SELECT NoTypeUtilisateur, Identification " +
+                    "FROM TypeUtilisateur ORDER BY Identification";
 
-            dataAdapterTypes.Fill(monDataSet, "typeUtilisateur");
+                using (SqlDataAdapter adaptateur =
+                    new SqlDataAdapter(requete, connexion))
+                {
+                    DataTable tableTypes = new DataTable();
+                    adaptateur.Fill(tableTypes);
 
-            cboType.DataSource = monDataSet.Tables["typeUtilisateur"];
-            cboType.DisplayMember = "Identification";
-            cboType.ValueMember = "NoTypeUtilisateur";
+                    cboType.DataSource = tableTypes;
+                    cboType.DisplayMember = "Identification";
+                    cboType.ValueMember = "NoTypeUtilisateur";
+                }
+            }
+        }
+
+        private void MasquerMotDePasse()
+        {
+            foreach (DataGridViewColumn colonne in dgvUtilisateurs.Columns)
+            {
+                if (colonne.DataPropertyName == "MotDePasse")
+                    colonne.Visible = false;
+            }
         }
 
         private void ChargerUtilisateurs()
         {
-            String maRequeteSQL = "SELECT NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur " +
-                                  "FROM Utilisateur ORDER BY NoUtilisateur";
-            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
-            SqlDataAdapter dataAdapterUtilisateurs = new SqlDataAdapter(maRequeteSQL, maConnexion);
+            this.utilisateurTableAdapter.Fill(
+                this.bDB56Projet1CKWDataSet.Utilisateur);
 
-            dgvUtilisateurs.DataSource = null;
-            dgvUtilisateurs.Columns.Clear();
-            dgvUtilisateurs.AutoGenerateColumns = true;
+            utilisateurBindingSource.ResetBindings(false);
+            MasquerMotDePasse();
 
-            if (monDataSet.Tables.Contains("utilisateur"))
-                monDataSet.Tables.Remove("utilisateur");
+            modeAjout = false;
+            modeModification = false;
 
-            dataAdapterUtilisateurs.Fill(monDataSet, "utilisateur");
-
-            dgvUtilisateurs.DataSource = monDataSet.Tables["utilisateur"];
-
-            foreach (DataGridViewColumn col in dgvUtilisateurs.Columns)
-                if (col.DataPropertyName == "MotDePasse") col.Visible = false;
+            MettreAJourControles();
         }
 
-        // =====================================================
-        //  Affichage de la ligne sélectionnée
-        // =====================================================
-        private void dgvUtilisateurs_SelectionChanged(object sender, EventArgs e)
+        // Nom modifiable seulement à l'ajout, type verrouillé
+        // pour son propre compte.
+        private void MettreAJourControles()
         {
-            if (!modeAjout) AfficherSelection();
-        }
+            bool estMoi = false;
 
-        private DataRow LigneSelectionnee()
-        {
-            if (dgvUtilisateurs.CurrentRow == null) return null;
-            DataRowView vue = dgvUtilisateurs.CurrentRow.DataBoundItem as DataRowView;
-            return vue == null ? null : vue.Row;
-        }
+            DataRowView vue = utilisateurBindingSource.Current as DataRowView;
 
-        private void AfficherSelection()
-        {
-            DataRow ligne = LigneSelectionnee();
-            if (ligne != null)
+            if (vue != null && !modeAjout && vue["NoUtilisateur"] != DBNull.Value)
             {
-                txtNo.Text = ligne["NoUtilisateur"].ToString();
-                txtNom.Text = ligne["NomUtilisateur"].ToString();
-                txtMdp.Text = ligne["MotDePasse"].ToString();
-                cboType.SelectedValue = ligne["NoTypeUtilisateur"];
+                estMoi = Convert.ToInt32(vue["NoUtilisateur"])
+                         == Session.NoUtilisateur;
             }
-            else
-            {
-                txtNo.Clear();
-                txtNom.Clear();
-                txtMdp.Clear();
-            }
-            MettreAJourEtat();
-        }
 
-        private void MettreAJourEtat()
-        {
-            DataRow ligne = LigneSelectionnee();
-            bool aUneLigne = ligne != null;
-
-            btnAjouter.Text = modeAjout ? "Confirmer l'ajout" : "Ajouter";
-            btnAjouter.Enabled = true;
-            btnModifier.Enabled = aUneLigne && !modeAjout;
-            btnSupprimer.Enabled = aUneLigne && !modeAjout;
-            btnAnnuler.Enabled = modeAjout;
-
-            // Le nom n'est modifiable que lors de l'ajout (unique et non modifiable ensuite)
-            txtNom.ReadOnly = !modeAjout;
             txtNo.ReadOnly = true;
-
-            // Un utilisateur ne peut pas modifier son propre type
-            bool estMoi = aUneLigne && !modeAjout
-                          && Convert.ToInt32(ligne["NoUtilisateur"]) == Session.NoUtilisateur;
-            cboType.Enabled = modeAjout || (aUneLigne && !estMoi);
+            txtNom.ReadOnly = !modeAjout;
+            cboType.Enabled = modeAjout || !estMoi;
         }
 
-        // =====================================================
-        //  Validation des champs obligatoires
-        // =====================================================
-        private bool ChampsValides()
+        private void utilisateurBindingSource_CurrentChanged(
+            object sender, EventArgs e)
         {
-            if (txtNom.Text.Trim() == "")
-            {
-                MessageBox.Show("Le nom d'utilisateur est obligatoire.", "Champ obligatoire",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtNom.Focus();
-                return false;
-            }
-            if (txtMdp.Text == "")
-            {
-                MessageBox.Show("Le mot de passe est obligatoire.", "Champ obligatoire",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtMdp.Focus();
-                return false;
-            }
-            if (cboType.SelectedValue == null)
-            {
-                MessageBox.Show("Le type d'utilisateur est obligatoire.", "Champ obligatoire",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cboType.Focus();
-                return false;
-            }
-            return true;
+            MettreAJourControles();
         }
 
-        // =====================================================
-        //  Requêtes en mode connecté (ExecuteScalar)
-        // =====================================================
+        private void txtMdp_TextChanged(object sender, EventArgs e)
+        {
+            if (!modeAjout && txtMdp.Focused)
+                modeModification = true;
+        }
+
+        private void cboType_SelectionChangeCommitted(
+            object sender, EventArgs e)
+        {
+            if (!modeAjout)
+                modeModification = true;
+        }
+
         private int ObtenirProchainNumero()
         {
-            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
-            try
-            {
-                maConnexion.Open();
-                String maRequeteSQL = "SELECT MAX(NoUtilisateur) FROM Utilisateur";
-                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
-                object resultat = maCommande.ExecuteScalar();
-                return (resultat == null || resultat == DBNull.Value) ? 1 : Convert.ToInt32(resultat) + 1;
-            }
-            finally
-            {
-                maConnexion.Close();
-            }
-        }
+            int numeroMax = 0;
 
-        private bool NomExiste(String nom)
-        {
-            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
-            try
+            foreach (DataRow ligne in
+                bDB56Projet1CKWDataSet.Utilisateur.Rows)
             {
-                maConnexion.Open();
-                String maRequeteSQL = "SELECT COUNT(*) FROM Utilisateur WHERE NomUtilisateur = @nom";
-                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
-                maCommande.Parameters.AddWithValue("@nom", nom);
-                return Convert.ToInt32(maCommande.ExecuteScalar()) > 0;
-            }
-            finally
-            {
-                maConnexion.Close();
-            }
-        }
-
-        // =====================================================
-        //  Requête d'écriture dans une transaction (ExecuteNonQuery)
-        // =====================================================
-        private bool ExecuterRequete(String maRequeteSQL, params SqlParameter[] parametres)
-        {
-            SqlConnection maConnexion = new SqlConnection(maChaineDeConnexion);
-            SqlTransaction maTransaction = null;
-            try
-            {
-                maConnexion.Open();
-                maTransaction = maConnexion.BeginTransaction();
-
-                SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
-                maCommande.Transaction = maTransaction;
-                maCommande.Parameters.AddRange(parametres);
-                maCommande.ExecuteNonQuery();
-
-                maTransaction.Commit();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (maTransaction != null)
+                if (ligne.RowState != DataRowState.Deleted)
                 {
-                    try { maTransaction.Rollback(); } catch { }
+                    int numero = Convert.ToInt32(ligne["NoUtilisateur"]);
+
+                    if (numero > numeroMax)
+                        numeroMax = numero;
                 }
-                MessageBox.Show("Erreur lors de la sauvegarde dans la base de données :\n" + ex.Message,
-                                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
             }
-            finally
+
+            return numeroMax + 1;
+        }
+
+        private bool NomExiste(string nom)
+        {
+            using (SqlConnection connexion =
+                new SqlConnection(ConnexionBD.Chaine))
             {
-                maConnexion.Close();
+                connexion.Open();
+
+                string requete =
+                    "SELECT COUNT(*) FROM Utilisateur " +
+                    "WHERE NomUtilisateur = @nom";
+
+                using (SqlCommand commande =
+                    new SqlCommand(requete, connexion))
+                {
+                    commande.Parameters.Add(
+                        "@nom", SqlDbType.NVarChar).Value = nom;
+
+                    return Convert.ToInt32(commande.ExecuteScalar()) > 0;
+                }
             }
         }
 
-        // =====================================================
-        //  Ajouter (1er clic : préparer, 2e clic : confirmer)
-        // =====================================================
+        private void utilisateurBindingNavigatorSaveItem_Click(
+            object sender, EventArgs e)
+        {
+            btnEnregistrer_Click(sender, e);
+        }
+
         private void btnAjouter_Click(object sender, EventArgs e)
         {
-            if (!modeAjout) PreparerAjout();
-            else ConfirmerAjout();
+            if (modeAjout || modeModification)
+                return;
+
+            modeAjout = true;
+
+            DataRowView nouvelleLigne =
+                (DataRowView)utilisateurBindingSource.AddNew();
+
+            nouvelleLigne["NoUtilisateur"] = ObtenirProchainNumero();
+            nouvelleLigne["NomUtilisateur"] = "";
+            nouvelleLigne["MotDePasse"] = "";
+
+            if (cboType.Items.Count > 0)
+            {
+                nouvelleLigne["NoTypeUtilisateur"] =
+                    ((DataRowView)cboType.Items[0])["NoTypeUtilisateur"];
+            }
+
+            MettreAJourControles();
+            txtNom.Focus();
         }
 
-        private void PreparerAjout()
+        private void btnSupprimer_Click(object sender, EventArgs e)
         {
-            try
+            if (modeAjout || modeModification)
             {
-                int no = ObtenirProchainNumero();      // numéro automatique
-
-                modeAjout = true;
-                txtNo.Text = no.ToString();
-                txtNom.Clear();
-                txtMdp.Clear();
-                cboType.SelectedIndex = 0;
-
-                MettreAJourEtat();
-                txtNom.Focus();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur :\n" + ex.Message, "Erreur",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void ConfirmerAjout()
-        {
-            if (!ChampsValides()) return;
-
-            String nom = txtNom.Text.Trim();
-
-            try
-            {
-                if (NomExiste(nom))
-                {
-                    MessageBox.Show("Ce nom d'utilisateur existe déjà.", "Doublon",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    txtNom.Focus();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur :\n" + ex.Message, "Erreur",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Enregistrez ou annulez l'opération en cours.");
                 return;
             }
 
-            int no = int.Parse(txtNo.Text);
+            if (utilisateurBindingSource.Current == null)
+            {
+                MessageBox.Show(
+                    "Veuillez sélectionner un utilisateur.");
+                return;
+            }
 
-            bool ok = ExecuterRequete(
-                "INSERT INTO Utilisateur (NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur) " +
-                "VALUES (@no, @nom, @mdp, @type)",
-                new SqlParameter("@no", no),
-                new SqlParameter("@nom", nom),
-                new SqlParameter("@mdp", txtMdp.Text),
-                new SqlParameter("@type", Convert.ToInt32(cboType.SelectedValue)));
-            if (!ok) return;
+            DataRowView ligne =
+                (DataRowView)utilisateurBindingSource.Current;
 
-            modeAjout = false;
-            ChargerUtilisateurs();                     // met à jour la mémoire (DataTable)
-            SelectionnerNumero(no);
+            int numero = Convert.ToInt32(ligne["NoUtilisateur"]);
+            string nom = ligne["NomUtilisateur"].ToString();
 
-            MessageBox.Show("Utilisateur ajouté.", "Succès",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (numero == Session.NoUtilisateur)
+            {
+                MessageBox.Show(
+                    "Vous ne pouvez pas supprimer votre propre compte.",
+                    "Suppression refusée",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (numero == ADMIN_INITIAL)
+            {
+                MessageBox.Show(
+                    "L'administrateur initial ne peut pas être supprimé.",
+                    "Suppression refusée",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            DialogResult reponse = MessageBox.Show(
+                "Voulez-vous vraiment supprimer l'utilisateur « " +
+                nom + " » ?",
+                "Confirmation",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (reponse != DialogResult.Yes)
+                return;
+
+            try
+            {
+                utilisateurBindingSource.RemoveCurrent();
+
+                this.Validate();
+                utilisateurBindingSource.EndEdit();
+
+                this.utilisateurTableAdapter.Update(
+                    this.bDB56Projet1CKWDataSet.Utilisateur);
+
+                MessageBox.Show(
+                    "L'utilisateur a été supprimé.",
+                    "Suppression",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erreur lors de la suppression :\n" +
+                    ex.Message,
+                    "Erreur",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                ChargerUtilisateurs();
+            }
+        }
+
+        private void btnEnregistrer_Click(object sender, EventArgs e)
+        {
+            if (!modeAjout && !modeModification)
+            {
+                MessageBox.Show(
+                    "Aucune opération n'est en cours.");
+                return;
+            }
+
+            if (!ValiderChamps())
+                return;
+
+            try
+            {
+                this.Validate();
+                utilisateurBindingSource.EndEdit();
+
+                this.utilisateurTableAdapter.Update(
+                    this.bDB56Projet1CKWDataSet.Utilisateur);
+
+                modeAjout = false;
+                modeModification = false;
+
+                ChargerUtilisateurs();
+
+                MessageBox.Show(
+                    "Les modifications ont été enregistrées " +
+                    "dans la base de données.",
+                    "Enregistrement",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erreur lors de l'enregistrement :\n" +
+                    ex.Message,
+                    "Erreur",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private bool ValiderChamps()
+        {
+            errMessage.Clear();
+
+            if (string.IsNullOrWhiteSpace(txtNom.Text))
+            {
+                errMessage.SetError(
+                    txtNom,
+                    "Le nom d'utilisateur est obligatoire.");
+                txtNom.Focus();
+                return false;
+            }
+
+            // Le doublon ne se vérifie qu'à l'ajout (le nom n'est
+            // pas modifiable ensuite).
+            if (modeAjout && NomExiste(txtNom.Text.Trim()))
+            {
+                errMessage.SetError(
+                    txtNom,
+                    "Ce nom d'utilisateur existe déjà.");
+                txtNom.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtMdp.Text))
+            {
+                errMessage.SetError(
+                    txtMdp,
+                    "Le mot de passe est obligatoire.");
+                txtMdp.Focus();
+                return false;
+            }
+
+            if (cboType.SelectedValue == null ||
+                cboType.SelectedValue is DataRowView)
+            {
+                errMessage.SetError(
+                    cboType,
+                    "Le type d'utilisateur est obligatoire.");
+                cboType.Focus();
+                return false;
+            }
+
+            return true;
         }
 
         private void btnAnnuler_Click(object sender, EventArgs e)
         {
+            bDB56Projet1CKWDataSet.Utilisateur.RejectChanges();
+
+            utilisateurBindingSource.CancelEdit();
+            utilisateurBindingSource.ResetBindings(false);
+
+            errMessage.Clear();
+
             modeAjout = false;
-            AfficherSelection();
-        }
+            modeModification = false;
 
-        // =====================================================
-        //  Modifier
-        // =====================================================
-        private void btnModifier_Click(object sender, EventArgs e)
-        {
-            DataRow ligne = LigneSelectionnee();
-            if (modeAjout || ligne == null) return;
-            if (!ChampsValides()) return;
+            ChargerUtilisateurs();
 
-            int no = Convert.ToInt32(ligne["NoUtilisateur"]);
-            int typeActuel = Convert.ToInt32(ligne["NoTypeUtilisateur"]);
-
-            // Le type ne change que pour un autre utilisateur
-            int type = (no == Session.NoUtilisateur) ? typeActuel : Convert.ToInt32(cboType.SelectedValue);
-
-            if (txtMdp.Text == ligne["MotDePasse"].ToString() && type == typeActuel)
-            {
-                MessageBox.Show("Aucune modification à enregistrer.", "Information",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            bool ok = ExecuterRequete(
-                "UPDATE Utilisateur SET MotDePasse = @mdp, NoTypeUtilisateur = @type " +
-                "WHERE NoUtilisateur = @no",
-                new SqlParameter("@mdp", txtMdp.Text),
-                new SqlParameter("@type", type),
-                new SqlParameter("@no", no));
-            if (!ok) return;
-
-            ChargerUtilisateurs();                     // met à jour la mémoire (DataTable)
-            SelectionnerNumero(no);
-
-            MessageBox.Show("Utilisateur modifié.", "Succès",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        // =====================================================
-        //  Supprimer
-        // =====================================================
-        private void btnSupprimer_Click(object sender, EventArgs e)
-        {
-            DataRow ligne = LigneSelectionnee();
-            if (modeAjout || ligne == null) return;
-
-            int no = Convert.ToInt32(ligne["NoUtilisateur"]);
-            String nom = ligne["NomUtilisateur"].ToString();
-
-            if (no == Session.NoUtilisateur)
-            {
-                MessageBox.Show("Vous ne pouvez pas supprimer votre propre compte.", "Refusé",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            if (no == ADMIN_INITIAL)
-            {
-                MessageBox.Show("L'administrateur initial ne peut pas être supprimé.", "Refusé",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (MessageBox.Show("Supprimer l'utilisateur « " + nom + " » ?", "Confirmation",
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                return;
-
-            bool ok = ExecuterRequete(
-                "DELETE FROM Utilisateur WHERE NoUtilisateur = @no",
-                new SqlParameter("@no", no));
-            if (!ok) return;
-
-            ChargerUtilisateurs();                     // met à jour la mémoire (DataTable)
-            AfficherSelection();
-        }
-
-        private void SelectionnerNumero(int no)
-        {
-            foreach (DataGridViewRow r in dgvUtilisateurs.Rows)
-            {
-                DataRowView vue = r.DataBoundItem as DataRowView;
-                if (vue != null && Convert.ToInt32(vue.Row["NoUtilisateur"]) == no)
-                {
-                    dgvUtilisateurs.CurrentCell = r.Cells[0];
-                    r.Selected = true;
-                    break;
-                }
-            }
-            AfficherSelection();
+            MessageBox.Show(
+                "Les modifications non enregistrées ont été annulées.",
+                "Annulation",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
     }
 }

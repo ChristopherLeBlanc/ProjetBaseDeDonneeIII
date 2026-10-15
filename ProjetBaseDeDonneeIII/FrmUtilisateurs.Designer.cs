@@ -64,11 +64,13 @@
             this.btnSupprimer = new System.Windows.Forms.Button();
             this.btnModifier = new System.Windows.Forms.Button();
             this.btnAnnuler = new System.Windows.Forms.Button();
+            this.errMessage = new System.Windows.Forms.ErrorProvider(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.bDB56Projet1CKWDataSet)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.utilisateurBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.utilisateurBindingNavigator)).BeginInit();
             this.utilisateurBindingNavigator.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUtilisateurs)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errMessage)).BeginInit();
             this.SuspendLayout();
             // 
             // bDB56Projet1CKWDataSet
@@ -362,15 +364,17 @@
             this.btnAjouter.TabIndex = 10;
             this.btnAjouter.Text = "Ajouter";
             this.btnAjouter.UseVisualStyleBackColor = true;
+            this.btnAjouter.Click += new System.EventHandler(this.btnAjouter_Click);
             // 
             // btnSupprimer
             // 
-            this.btnSupprimer.Location = new System.Drawing.Point(438, 474);
+            this.btnSupprimer.Location = new System.Drawing.Point(267, 415);
             this.btnSupprimer.Name = "btnSupprimer";
             this.btnSupprimer.Size = new System.Drawing.Size(163, 53);
             this.btnSupprimer.TabIndex = 11;
             this.btnSupprimer.Text = "Supprimer";
             this.btnSupprimer.UseVisualStyleBackColor = true;
+            this.btnSupprimer.Click += new System.EventHandler(this.btnSupprimer_Click);
             // 
             // btnModifier
             // 
@@ -378,8 +382,9 @@
             this.btnModifier.Name = "btnModifier";
             this.btnModifier.Size = new System.Drawing.Size(165, 51);
             this.btnModifier.TabIndex = 12;
-            this.btnModifier.Text = "Modifier";
+            this.btnModifier.Text = "Enregistrer";
             this.btnModifier.UseVisualStyleBackColor = true;
+            this.btnModifier.Click += new System.EventHandler(this.btnEnregistrer_Click);
             // 
             // btnAnnuler
             // 
@@ -389,6 +394,11 @@
             this.btnAnnuler.TabIndex = 13;
             this.btnAnnuler.Text = "Annuler";
             this.btnAnnuler.UseVisualStyleBackColor = true;
+            this.btnAnnuler.Click += new System.EventHandler(this.btnAnnuler_Click);
+            // 
+            // errMessage
+            // 
+            this.errMessage.ContainerControl = this;
             // 
             // FrmUtilisateurs
             // 
@@ -410,7 +420,7 @@
             this.Controls.Add(this.dgvUtilisateurs);
             this.Controls.Add(this.utilisateurBindingNavigator);
             this.Name = "FrmUtilisateurs";
-            this.Text = "FrmUtilisateurs";
+            this.Text = " ";
             this.Load += new System.EventHandler(this.FrmUtilisateurs_Load);
             ((System.ComponentModel.ISupportInitialize)(this.bDB56Projet1CKWDataSet)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.utilisateurBindingSource)).EndInit();
@@ -418,6 +428,7 @@
             this.utilisateurBindingNavigator.ResumeLayout(false);
             this.utilisateurBindingNavigator.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUtilisateurs)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errMessage)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -459,5 +470,6 @@
         private System.Windows.Forms.Button btnSupprimer;
         private System.Windows.Forms.Button btnModifier;
         private System.Windows.Forms.Button btnAnnuler;
+        private System.Windows.Forms.ErrorProvider errMessage;
     }
 }

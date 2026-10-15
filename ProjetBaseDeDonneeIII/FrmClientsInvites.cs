@@ -1,5 +1,5 @@
-﻿
-using System;
+﻿using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
@@ -10,132 +10,453 @@ namespace ProjetBaseDeDonneeIII
     {
         private const int MAX_INVITES = 9;
 
-        private string maChaineDeConnexion = ConnexionBD.Chaine;
-
         private bool modeAjoutClient = false;
+        private bool modeModificationClient = false;
         private bool modeAjoutInvite = false;
+        private bool modeModificationInvite = false;
 
         public FrmClientsInvites()
         {
             InitializeComponent();
-            // charge client a ouverture
-            this.Load += FrmClientsInvites_Load;
 
-            // charge invite selon client
-            dgvClients.SelectionChanged += dgvClients_SelectionChanged;
-            dgvInvites.SelectionChanged += dgvInvites_SelectionChanged;
+            this.Load -= FrmClientsInvites_Load;
+            this.Load += FrmClientsInvites_Load;
         }
 
-        //etat
+        // =====================================================
+        // CHARGEMENT
+        // =====================================================
+
+        private void FrmClientsInvites_Load(object sender, EventArgs e)
+        {
+            ChargerDonnees();
+
+            dgvClients.DataSource = clientBindingSource;
+            dgvInvites.DataSource = inviteBindingSource;
+
+            // ----- Liaisons du client -----
+            LierTexte(txtNoClient, clientBindingSource, "NoClient");
+            LierTexte(txtNom, clientBindingSource, "Nom");
+            LierTexte(txtPrenom, clientBindingSource, "Prenom");
+            LierTexte(txtVille, clientBindingSource, "Ville");
+            LierTexte(txtPays, clientBindingSource, "Pays");
+            LierTexte(txtAdresse, clientBindingSource, "Adresse");
+            LierTexte(txtCodePostal, clientBindingSource, "CodePostal");
+
+            txtDateInscription.DataBindings.Clear();
+            txtDateInscription.DataBindings.Add(
+                "Text", clientBindingSource, "DateInscription",
+                true, DataSourceUpdateMode.OnPropertyChanged,
+                "", "yyyy-MM-dd");
+
+            // ----- Liaisons de l'invité -----
+            LierTexte(txtNoInvite, inviteBindingSource, "NoInvite");
+            LierTexte(txtNomPrenomInvite, inviteBindingSource, "NomPrenom");
+
+            // ----- Détection des modifications -----
+            TextBox[] champsClient =
+            {
+                txtNom, txtPrenom, txtVille,
+                txtPays, txtAdresse, txtCodePostal
+            };
+
+            foreach (TextBox champ in champsClient)
+                champ.TextChanged += champClient_TextChanged;
+
+            txtNomPrenomInvite.TextChanged += champInvite_TextChanged;
+
+            clientBindingSource.CurrentChanged +=
+                clientBindingSource_CurrentChanged;
+
+
+
+            FiltrerInvites();
+            MettreAJourEtat();
+        }
+
+        private void LierTexte(
+            TextBox champ, BindingSource source, string colonne)
+        {
+            champ.DataBindings.Clear();
+            champ.DataBindings.Add(
+                "Text", source, colonne,
+                true, DataSourceUpdateMode.OnPropertyChanged);
+        }
+
+        private void ChargerDonnees()
+        {
+            this.clientTableAdapter.Fill(
+                this.bDB56Projet1CKWDataSet.Client);
+
+            this.inviteTableAdapter.Fill(
+                this.bDB56Projet1CKWDataSet.Invite);
+
+            clientBindingSource.ResetBindings(false);
+            inviteBindingSource.ResetBindings(false);
+
+            modeAjoutClient = false;
+            modeModificationClient = false;
+            modeAjoutInvite = false;
+            modeModificationInvite = false;
+
+            FiltrerInvites();
+            MettreAJourEtat();
+        }
+
+        // =====================================================
+        // INVITÉS DU CLIENT COURANT
+        // =====================================================
+
+        private void clientBindingSource_CurrentChanged(
+            object sender, EventArgs e)
+        {
+            if (!modeAjoutClient)
+                FiltrerInvites();
+
+            MettreAJourEtat();
+        }
+
+        private void FiltrerInvites()
+        {
+            DataRowView client =
+                clientBindingSource.Current as DataRowView;
+
+            if (client == null || client["NoClient"] == DBNull.Value)
+            {
+                inviteBindingSource.Filter = "NoClient = -1";
+                return;
+            }
+
+            inviteBindingSource.Filter =
+                "NoClient = " + Convert.ToInt32(client["NoClient"]);
+        }
+
+        // =====================================================
+        // DÉTECTION DES MODIFICATIONS
+        // =====================================================
+
+        private void champClient_TextChanged(object sender, EventArgs e)
+        {
+            if (!modeAjoutClient && ((Control)sender).Focused)
+            {
+                modeModificationClient = true;
+                MettreAJourEtat();
+            }
+        }
+
+        private void champInvite_TextChanged(object sender, EventArgs e)
+        {
+            if (!modeAjoutInvite && ((Control)sender).Focused)
+            {
+                modeModificationInvite = true;
+                MettreAJourEtat();
+            }
+        }
+
+        // =====================================================
+        // ÉTAT DES CONTRÔLES
+        // =====================================================
 
         private void MettreAJourEtat()
         {
-            bool aClient = !string.IsNullOrWhiteSpace(txtNoClient.Text);
-            bool aInvite = !string.IsNullOrWhiteSpace(txtNoInvite.Text);
+            bool modeClient = modeAjoutClient || modeModificationClient;
+            bool modeInvite = modeAjoutInvite || modeModificationInvite;
 
+            bool aClient = clientBindingSource.Current != null;
+            bool aInvite = inviteBindingSource.Current != null;
+
+            // Champs jamais modifiables.
             txtNoClient.ReadOnly = true;
             txtDateInscription.ReadOnly = true;
             txtNoInvite.ReadOnly = true;
 
-            btnAjouterClient.Text =
-                modeAjoutClient ? "Confirmer l'ajout" : "Ajouter";
+            // Les champs du client sont bloqués pendant une opération
+            // sur un invité, et inversement.
+            
 
-            btnAjouterClient.Enabled = !modeAjoutInvite;
-            btnModifierClient.Enabled =
-                aClient && !modeAjoutClient && !modeAjoutInvite;
+            txtNomPrenomInvite.ReadOnly =
+                modeClient || !(aInvite || modeAjoutInvite);
+
+            // Boutons client.
+            btnAjouterClient.Enabled = !modeClient && !modeInvite;
             btnSupprimerClient.Enabled =
-                aClient && !modeAjoutClient && !modeAjoutInvite;
-            btnAnnulerClient.Enabled = modeAjoutClient;
+                !modeClient && !modeInvite && aClient;
+            btnEnregistrerClient.Enabled = modeClient;
+            btnAnnulerClient.Enabled = modeClient;
 
-            btnAjouterInvite.Text =
-                modeAjoutInvite ? "Confirmer l'ajout" : "Ajouter";
-
-            btnAjouterInvite.Enabled = aClient && !modeAjoutClient;
-            btnModifierInvite.Enabled =
-                aInvite && !modeAjoutInvite && !modeAjoutClient;
+            // Boutons invité.
+            btnAjouterInvite.Enabled =
+                !modeClient && !modeInvite && aClient;
             btnSupprimerInvite.Enabled =
-                aInvite && !modeAjoutInvite && !modeAjoutClient;
-            btnAnnulerInvite.Enabled = modeAjoutInvite;
+                !modeClient && !modeInvite && aInvite;
+            btnEnregistrerInvite.Enabled = modeInvite;
+            btnAnnulerInvite.Enabled = modeInvite;
+
+            // Empêcher de changer de ligne pendant une opération.
+            dgvClients.Enabled = !modeClient && !modeInvite;
+            dgvInvites.Enabled = !modeClient && !modeInvite;
         }
 
-        //sql
+        // =====================================================
+        // SQL
+        // =====================================================
 
-        private object ExecuterScalaire(
-            string maRequeteSQL,
-            params SqlParameter[] parametres)
+        private int Compter(string requete, params SqlParameter[] parametres)
         {
-            using (SqlConnection maConnexion =
-                   new SqlConnection(maChaineDeConnexion))
-            using (SqlCommand maCommande =
-                   new SqlCommand(maRequeteSQL, maConnexion))
+            using (SqlConnection connexion =
+                new SqlConnection(ConnexionBD.Chaine))
+            using (SqlCommand commande =
+                new SqlCommand(requete, connexion))
             {
-                maCommande.Parameters.AddRange(parametres);
-                maConnexion.Open();
+                commande.Parameters.AddRange(parametres);
+                connexion.Open();
 
-                return maCommande.ExecuteScalar();
+                return Convert.ToInt32(commande.ExecuteScalar());
             }
         }
 
-        private bool ExecuterRequete(
-            string maRequeteSQL,
-            params SqlParameter[] parametres)
+        // =====================================================
+        // NUMÉROS AUTOMATIQUES
+        // =====================================================
+
+        // Premier client : 10, ensuite +10.
+        private int ObtenirProchainNumeroClient()
         {
-            using (SqlConnection maConnexion =
-                   new SqlConnection(maChaineDeConnexion))
+            int numeroMax = 0;
+
+            foreach (DataRow ligne in
+                bDB56Projet1CKWDataSet.Client.Rows)
             {
-                SqlTransaction maTransaction = null;
-
-                try
+                if (ligne.RowState != DataRowState.Deleted)
                 {
-                    maConnexion.Open();
-                    maTransaction = maConnexion.BeginTransaction();
+                    int numero = Convert.ToInt32(ligne["NoClient"]);
 
-                    using (SqlCommand maCommande =
-                           new SqlCommand(maRequeteSQL, maConnexion))
-                    {
-                        maCommande.Transaction = maTransaction;
-                        maCommande.Parameters.AddRange(parametres);
-                        maCommande.ExecuteNonQuery();
-                    }
-
-                    maTransaction.Commit();
-                    return true;
+                    if (numero > numeroMax)
+                        numeroMax = numero;
                 }
-                catch (Exception ex)
-                {
-                    if (maTransaction != null)
-                    {
-                        try { maTransaction.Rollback(); }
-                        catch { }
-                    }
+            }
 
+            return numeroMax + 10;
+        }
+
+        // Entre NoClient + 1 et NoClient + 9. Retourne -1 si plein.
+        private int ObtenirProchainNumeroInvite(int noClient)
+        {
+            for (int i = 1; i <= MAX_INVITES; i++)
+            {
+                int candidat = noClient + i;
+                bool utilise = false;
+
+                foreach (DataRow ligne in
+                    bDB56Projet1CKWDataSet.Invite.Rows)
+                {
+                    if (ligne.RowState != DataRowState.Deleted &&
+                        Convert.ToInt32(ligne["NoInvite"]) == candidat)
+                    {
+                        utilise = true;
+                        break;
+                    }
+                }
+
+                if (!utilise)
+                    return candidat;
+            }
+
+            return -1;
+        }
+
+        // =====================================================
+        // CLIENT : AJOUTER
+        // =====================================================
+
+        private void btnAjouterClient_Click(object sender, EventArgs e)
+        {
+            if (modeAjoutClient || modeModificationClient ||
+                modeAjoutInvite || modeModificationInvite)
+                return;
+
+            modeAjoutClient = true;
+
+            int numero = ObtenirProchainNumeroClient();
+
+            DataRowView nouvelleLigne =
+                (DataRowView)clientBindingSource.AddNew();
+
+            nouvelleLigne["NoClient"] = numero;
+            nouvelleLigne["Nom"] = "";
+            nouvelleLigne["Prenom"] = "";
+            nouvelleLigne["Ville"] = "";
+            nouvelleLigne["Pays"] = "";
+            nouvelleLigne["Adresse"] = "";
+            nouvelleLigne["CodePostal"] = "";
+            nouvelleLigne["DateInscription"] = DateTime.Today;
+
+            FiltrerInvites();
+            MettreAJourEtat();
+            txtNom.Focus();
+        }
+
+        // =====================================================
+        // CLIENT : SUPPRIMER
+        // =====================================================
+
+        private void btnSupprimerClient_Click(object sender, EventArgs e)
+        {
+            if (modeAjoutClient || modeModificationClient ||
+                modeAjoutInvite || modeModificationInvite)
+            {
+                MessageBox.Show(
+                    "Enregistrez ou annulez l'opération en cours.");
+                return;
+            }
+
+            if (clientBindingSource.Current == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un client.");
+                return;
+            }
+
+            DataRowView ligne =
+                (DataRowView)clientBindingSource.Current;
+
+            int numero = Convert.ToInt32(ligne["NoClient"]);
+            string nomComplet =
+                ligne["Prenom"] + " " + ligne["Nom"];
+
+            try
+            {
+                SqlParameter p = new SqlParameter("@no", numero);
+
+                if (Compter(
+                    "SELECT COUNT(*) FROM Invite WHERE NoClient = @no",
+                    new SqlParameter("@no", numero)) > 0)
+                {
                     MessageBox.Show(
-                        "Erreur lors de la sauvegarde :\n" + ex.Message,
-                        "Erreur",
+                        "Ce client a des invités : suppression impossible.",
+                        "Suppression refusée",
                         MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-
-                    return false;
+                        MessageBoxIcon.Warning);
+                    return;
                 }
+
+                if (Compter(
+                    "SELECT COUNT(*) FROM ReservationChambre WHERE NoClient = @no",
+                    new SqlParameter("@no", numero)) > 0)
+                {
+                    MessageBox.Show(
+                        "Ce client a réservé une chambre : suppression impossible.",
+                        "Suppression refusée",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (Compter(
+                    "SELECT COUNT(*) FROM PlanifSoin WHERE NoPersonne = @no",
+                    new SqlParameter("@no", numero)) > 0)
+                {
+                    MessageBox.Show(
+                        "Des soins sont planifiés pour ce client : suppression impossible.",
+                        "Suppression refusée",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                DialogResult reponse = MessageBox.Show(
+                    "Voulez-vous vraiment supprimer le client « " +
+                    nomComplet + " » ?",
+                    "Confirmation",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (reponse != DialogResult.Yes)
+                    return;
+
+                clientBindingSource.RemoveCurrent();
+
+                this.Validate();
+                clientBindingSource.EndEdit();
+
+                this.tableAdapterManager.UpdateAll(
+                    this.bDB56Projet1CKWDataSet);
+
+                MessageBox.Show(
+                    "Le client a été supprimé.",
+                    "Suppression",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erreur lors de la suppression :\n" + ex.Message,
+                    "Erreur",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                ChargerDonnees();
             }
         }
 
-        private int Compter(
-            string maRequeteSQL,
-            params SqlParameter[] parametres)
+        // =====================================================
+        // CLIENT : ENREGISTRER
+        // =====================================================
+
+        private void btnEnregistrerClient_Click(object sender, EventArgs e)
         {
-            return Convert.ToInt32(
-                ExecuterScalaire(maRequeteSQL, parametres));
+            if (!modeAjoutClient && !modeModificationClient)
+            {
+                MessageBox.Show("Aucune opération n'est en cours.");
+                return;
+            }
+
+            if (!ValiderClient())
+                return;
+
+            try
+            {
+                DataRowView courant = clientBindingSource.Current as DataRowView;
+
+                if (courant == null)
+                {
+                    MessageBox.Show("Aucune ligne à enregistrer.");
+                    return;
+                }
+
+                int numero = Convert.ToInt32(courant["NoClient"]);
+                
+
+                this.Validate();
+                clientBindingSource.EndEdit();
+
+                this.tableAdapterManager.UpdateAll(
+                    this.bDB56Projet1CKWDataSet);
+
+                ChargerDonnees();
+                SelectionnerClient(numero);
+
+                MessageBox.Show(
+                    "Les modifications ont été enregistrées " +
+                    "dans la base de données.",
+                    "Enregistrement",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erreur lors de l'enregistrement :\n" + ex.ToString(),
+                    "Erreur",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
-        private bool NumeroValide(TextBox champ, out int numero)
+        private bool ValiderClient()
         {
-            return int.TryParse(champ.Text, out numero);
-        }
+            errMessage.Clear();
 
-        //validation client
-        private bool ChampsClientValides()
-        {
             TextBox[] champs =
             {
                 txtNom, txtPrenom, txtVille,
@@ -152,12 +473,8 @@ namespace ProjetBaseDeDonneeIII
             {
                 if (string.IsNullOrWhiteSpace(champs[i].Text))
                 {
-                    MessageBox.Show(
-                        noms[i] + " est obligatoire.",
-                        "Champ obligatoire",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
+                    errMessage.SetError(
+                        champs[i], noms[i] + " est obligatoire.");
                     champs[i].Focus();
                     return false;
                 }
@@ -166,521 +483,267 @@ namespace ProjetBaseDeDonneeIII
             return true;
         }
 
-
-        //client ajouter
-
-        private void btnAjouterClient_Click(object sender, EventArgs e)
-        {
-            if (!modeAjoutClient)
-                PreparerAjoutClient();
-            else
-                ConfirmerAjoutClient();
-        }
-
-        private void PreparerAjoutClient()
-        {
-            try
-            {
-                object maximum =
-                    ExecuterScalaire("SELECT MAX(NoClient) FROM Client");
-
-                int no = (maximum == null || maximum == DBNull.Value)
-                    ? 10
-                    : Convert.ToInt32(maximum) + 10;
-
-                modeAjoutClient = true;
-
-                txtNoClient.Text = no.ToString();
-                txtDateInscription.Text =
-                    DateTime.Today.ToString("yyyy-MM-dd");
-
-                txtNom.Clear();
-                txtPrenom.Clear();
-                txtVille.Clear();
-                txtPays.Clear();
-                txtAdresse.Clear();
-                txtCodePostal.Clear();
-
-                MettreAJourEtat();
-                txtNom.Focus();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur :\n" + ex.Message);
-            }
-        }
-
-        private void ConfirmerAjoutClient()
-        {
-            if (!ChampsClientValides())
-                return;
-
-            if (!NumeroValide(txtNoClient, out int no))
-            {
-                MessageBox.Show("Numéro de client invalide.");
-                return;
-            }
-
-            bool ok = ExecuterRequete(
-                "INSERT INTO Client " +
-                "(NoClient, Nom, Prenom, Ville, Pays, Adresse, CodePostal, DateInscription) " +
-                "VALUES (@no, @nom, @prenom, @ville, @pays, @adresse, @cp, @date)",
-
-                new SqlParameter("@no", no),
-                new SqlParameter("@nom", txtNom.Text.Trim()),
-                new SqlParameter("@prenom", txtPrenom.Text.Trim()),
-                new SqlParameter("@ville", txtVille.Text.Trim()),
-                new SqlParameter("@pays", txtPays.Text.Trim()),
-                new SqlParameter("@adresse", txtAdresse.Text.Trim()),
-                new SqlParameter("@cp", txtCodePostal.Text.Trim()),
-                new SqlParameter("@date", DateTime.Today));
-
-            if (!ok)
-                return;
-            ChargerClients();
-            modeAjoutClient = false;
-            MettreAJourEtat();
-
-            MessageBox.Show("Client ajouté.");
-        }
+        // =====================================================
+        // CLIENT : ANNULER
+        // =====================================================
 
         private void btnAnnulerClient_Click(object sender, EventArgs e)
         {
-            modeAjoutClient = false;
-            MettreAJourEtat();
+            bDB56Projet1CKWDataSet.Client.RejectChanges();
+
+            clientBindingSource.CancelEdit();
+            clientBindingSource.ResetBindings(false);
+
+            errMessage.Clear();
+
+            ChargerDonnees();
+
+            MessageBox.Show(
+                "Les modifications non enregistrées ont été annulées.",
+                "Annulation",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
-       
-        //client modifier
-        private void btnModifierClient_Click(object sender, EventArgs e)
-        {
-            if (modeAjoutClient || modeAjoutInvite)
-                return;
+        // =====================================================
+        // INVITÉ : AJOUTER
+        // =====================================================
 
-            if (!NumeroValide(txtNoClient, out int no))
-            {
-                MessageBox.Show("Sélectionne un client.");
-                return;
-            }
-
-            if (!ChampsClientValides())
-                return;
-
-            bool ok = ExecuterRequete(
-                "UPDATE Client SET Nom = @nom, Prenom = @prenom, " +
-                "Ville = @ville, Pays = @pays, Adresse = @adresse, " +
-                "CodePostal = @cp WHERE NoClient = @no",
-
-                new SqlParameter("@nom", txtNom.Text.Trim()),
-                new SqlParameter("@prenom", txtPrenom.Text.Trim()),
-                new SqlParameter("@ville", txtVille.Text.Trim()),
-                new SqlParameter("@pays", txtPays.Text.Trim()),
-                new SqlParameter("@adresse", txtAdresse.Text.Trim()),
-                new SqlParameter("@cp", txtCodePostal.Text.Trim()),
-                new SqlParameter("@no", no));
-
-            if (ok)
-                MessageBox.Show("Client modifié.");
-        }
-
-        //Client supprimer
-        private void btnSupprimerClient_Click(object sender, EventArgs e)
-        {
-            if (modeAjoutClient || modeAjoutInvite)
-                return;
-
-            if (!NumeroValide(txtNoClient, out int no))
-            {
-                MessageBox.Show("Sélectionne un client.");
-                return;
-            }
-
-            string nomComplet =
-                txtPrenom.Text + " " + txtNom.Text;
-
-            try
-            {
-                if (Compter(
-                    "SELECT COUNT(*) FROM Invite WHERE NoClient = @no",
-                    new SqlParameter("@no", no)) > 0)
-                {
-                    MessageBox.Show(
-                        "Ce client a des invités : suppression impossible.");
-                    return;
-                }
-
-                if (Compter(
-                    "SELECT COUNT(*) FROM ReservationChambre WHERE NoClient = @no",
-                    new SqlParameter("@no", no)) > 0)
-                {
-                    MessageBox.Show(
-                        "Ce client a réservé une chambre : suppression impossible.");
-                    return;
-                }
-
-                if (Compter(
-                    "SELECT COUNT(*) FROM PlanifSoin WHERE NoPersonne = @no",
-                    new SqlParameter("@no", no)) > 0)
-                {
-                    MessageBox.Show(
-                        "Des soins sont planifiés pour ce client : suppression impossible.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur :\n" + ex.Message);
-                return;
-            }
-
-            if (MessageBox.Show(
-                "Supprimer le client « " + nomComplet + " » ?",
-                "Confirmation",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question) != DialogResult.Yes)
-                return;
-
-            if (ExecuterRequete(
-                "DELETE FROM Client WHERE NoClient = @no",
-                new SqlParameter("@no", no)))
-            {
-                MessageBox.Show("Client supprimé.");
-                MettreAJourEtat();
-            }
-        }
-
-        //prochain numero de l'invite
-        private int ProchainNumeroInvite(int noClient)
-        {
-            DataTable utilises = new DataTable();
-
-            using (SqlConnection maConnexion =
-                   new SqlConnection(maChaineDeConnexion))
-            using (SqlCommand commande = new SqlCommand(
-                "SELECT NoInvite FROM Invite WHERE NoClient = @noClient",
-                maConnexion))
-            using (SqlDataAdapter da = new SqlDataAdapter(commande))
-            {
-                commande.Parameters.AddWithValue("@noClient", noClient);
-                da.Fill(utilises);
-            }
-
-            for (int i = 1; i <= MAX_INVITES; i++)
-            {
-                int candidat = noClient + i;
-
-                if (utilises.Select("NoInvite = " + candidat).Length == 0)
-                    return candidat;
-            }
-
-            return -1;
-        }
-
-        //inviter ajouter
         private void btnAjouterInvite_Click(object sender, EventArgs e)
         {
-            if (!modeAjoutInvite)
-                PreparerAjoutInvite();
-            else
-                ConfirmerAjoutInvite();
+            if (modeAjoutClient || modeModificationClient ||
+                modeAjoutInvite || modeModificationInvite)
+                return;
+
+            DataRowView client =
+                clientBindingSource.Current as DataRowView;
+
+            if (client == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un client.");
+                return;
+            }
+
+            int noClient = Convert.ToInt32(client["NoClient"]);
+            int numero = ObtenirProchainNumeroInvite(noClient);
+
+            if (numero == -1)
+            {
+                MessageBox.Show(
+                    "Ce client a déjà le nombre maximum d'invités (" +
+                    MAX_INVITES + ").");
+                return;
+            }
+
+            modeAjoutInvite = true;
+
+            DataRowView nouvelleLigne =
+                (DataRowView)inviteBindingSource.AddNew();
+
+            nouvelleLigne["NoInvite"] = numero;
+            nouvelleLigne["NoClient"] = noClient;
+            nouvelleLigne["NomPrenom"] = "";
+
+            MettreAJourEtat();
+            txtNomPrenomInvite.Focus();
         }
 
-        private void PreparerAjoutInvite()
+        // =====================================================
+        // INVITÉ : SUPPRIMER
+        // =====================================================
+
+        private void btnSupprimerInvite_Click(object sender, EventArgs e)
         {
-            if (!NumeroValide(txtNoClient, out int noClient))
+            if (modeAjoutClient || modeModificationClient ||
+                modeAjoutInvite || modeModificationInvite)
             {
-                MessageBox.Show("Sélectionne un client.");
+                MessageBox.Show(
+                    "Enregistrez ou annulez l'opération en cours.");
+                return;
+            }
+
+            if (inviteBindingSource.Current == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un invité.");
+                return;
+            }
+
+            DataRowView ligne =
+                (DataRowView)inviteBindingSource.Current;
+
+            int numero = Convert.ToInt32(ligne["NoInvite"]);
+            string nom = ligne["NomPrenom"].ToString();
+
+            try
+            {
+                if (Compter(
+                    "SELECT COUNT(*) FROM PlanifSoin WHERE NoPersonne = @no",
+                    new SqlParameter("@no", numero)) > 0)
+                {
+                    MessageBox.Show(
+                        "Des soins sont planifiés pour cet invité : suppression impossible.",
+                        "Suppression refusée",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                DialogResult reponse = MessageBox.Show(
+                    "Voulez-vous vraiment supprimer l'invité « " +
+                    nom + " » ?",
+                    "Confirmation",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (reponse != DialogResult.Yes)
+                    return;
+
+                inviteBindingSource.RemoveCurrent();
+
+                this.Validate();
+                inviteBindingSource.EndEdit();
+
+                this.tableAdapterManager.UpdateAll(
+                    this.bDB56Projet1CKWDataSet);
+
+                MessageBox.Show(
+                    "L'invité a été supprimé.",
+                    "Suppression",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Erreur lors de la suppression :\n" + ex.Message,
+                    "Erreur",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                ChargerDonnees();
+            }
+        }
+
+        // =====================================================
+        // INVITÉ : ENREGISTRER
+        // =====================================================
+
+        private void btnEnregistrerInvite_Click(object sender, EventArgs e)
+        {
+            if (!modeAjoutInvite && !modeModificationInvite)
+            {
+                MessageBox.Show("Aucune opération n'est en cours.");
+                return;
+            }
+
+            errMessage.Clear();
+
+            if (string.IsNullOrWhiteSpace(txtNomPrenomInvite.Text))
+            {
+                errMessage.SetError(
+                    txtNomPrenomInvite,
+                    "Le nom de l'invité est obligatoire.");
+                txtNomPrenomInvite.Focus();
                 return;
             }
 
             try
             {
-                int no = ProchainNumeroInvite(noClient);
+                DataRowView client = clientBindingSource.Current as DataRowView;
+                DataRowView invite = inviteBindingSource.Current as DataRowView;
 
-                if (no == -1)
+                if (client == null || invite == null)
                 {
-                    MessageBox.Show(
-                        "Ce client a déjà le nombre maximum d'invités (" +
-                        MAX_INVITES + ").");
-
+                    MessageBox.Show("Aucune ligne à enregistrer.");
                     return;
                 }
 
-                modeAjoutInvite = true;
+                int noClient = Convert.ToInt32(client["NoClient"]);
+                int noInvite = Convert.ToInt32(invite["NoInvite"]);
 
-                txtNoInvite.Text = no.ToString();
-                txtNomPrenomInvite.Clear();
+                this.Validate();
+                inviteBindingSource.EndEdit();
 
-                MettreAJourEtat();
-                txtNomPrenomInvite.Focus();
+                this.tableAdapterManager.UpdateAll(
+                    this.bDB56Projet1CKWDataSet);
+
+                ChargerDonnees();
+                SelectionnerClient(noClient);
+                SelectionnerInvite(noInvite);
+
+                MessageBox.Show(
+                    "Les modifications ont été enregistrées " +
+                    "dans la base de données.",
+                    "Enregistrement",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erreur :\n" + ex.Message);
+                MessageBox.Show(
+                    "Erreur lors de l'enregistrement :\n" + ex.Message,
+                    "Erreur",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
-        private void ConfirmerAjoutInvite()
-        {
-            if (string.IsNullOrWhiteSpace(txtNomPrenomInvite.Text))
-            {
-                MessageBox.Show("Le nom de l'invité est obligatoire.");
-                txtNomPrenomInvite.Focus();
-                return;
-            }
-
-            if (!NumeroValide(txtNoClient, out int noClient) ||
-                !NumeroValide(txtNoInvite, out int no))
-            {
-                MessageBox.Show("Numéro de client ou d'invité invalide.");
-                return;
-            }
-
-            bool ok = ExecuterRequete(
-                "INSERT INTO Invite (NoInvite, NomPrenom, NoClient) " +
-                "VALUES (@no, @nom, @noClient)",
-
-                new SqlParameter("@no", no),
-                new SqlParameter("@nom", txtNomPrenomInvite.Text.Trim()),
-                new SqlParameter("@noClient", noClient));
-
-            if (!ok)
-                return;
-            ChargerInvites(noClient);
-            modeAjoutInvite = false;
-            MettreAJourEtat();
-
-            MessageBox.Show("Invité ajouté.");
-        }
+        // =====================================================
+        // INVITÉ : ANNULER
+        // =====================================================
 
         private void btnAnnulerInvite_Click(object sender, EventArgs e)
         {
-            modeAjoutInvite = false;
-            MettreAJourEtat();
+            bDB56Projet1CKWDataSet.Invite.RejectChanges();
+
+            inviteBindingSource.CancelEdit();
+            inviteBindingSource.ResetBindings(false);
+
+            errMessage.Clear();
+
+            ChargerDonnees();
+
+            MessageBox.Show(
+                "Les modifications non enregistrées ont été annulées.",
+                "Annulation",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
-        //inviter modifier
-        private void btnModifierInvite_Click(object sender, EventArgs e)
+        // =====================================================
+        // SÉLECTION APRÈS UNE OPÉRATION
+        // =====================================================
+
+        private void SelectionnerClient(int numero)
         {
-            if (modeAjoutInvite || modeAjoutClient)
-                return;
-
-            if (!NumeroValide(txtNoInvite, out int no))
+            for (int i = 0; i < clientBindingSource.Count; i++)
             {
-                MessageBox.Show("Sélectionne un invité.");
-                return;
-            }
+                DataRowView vue = clientBindingSource[i] as DataRowView;
 
-            if (string.IsNullOrWhiteSpace(txtNomPrenomInvite.Text))
-            {
-                MessageBox.Show("Le nom de l'invité est obligatoire.");
-                txtNomPrenomInvite.Focus();
-                return;
-            }
-
-            bool ok = ExecuterRequete(
-                "UPDATE Invite SET NomPrenom = @nom WHERE NoInvite = @no",
-                new SqlParameter("@nom", txtNomPrenomInvite.Text.Trim()),
-                new SqlParameter("@no", no));
-
-            if (ok)
-                MessageBox.Show("Invité modifié.");
-        }
-
-        // invite supprimer
-        private void btnSupprimerInvite_Click(object sender, EventArgs e)
-        {
-            if (modeAjoutInvite || modeAjoutClient)
-                return;
-
-            if (!NumeroValide(txtNoInvite, out int no))
-            {
-                MessageBox.Show("Sélectionne un invité.");
-                return;
-            }
-
-            string nom = txtNomPrenomInvite.Text;
-
-            try
-            {
-                if (Compter(
-                    "SELECT COUNT(*) FROM PlanifSoin WHERE NoPersonne = @no",
-                    new SqlParameter("@no", no)) > 0)
+                if (vue != null &&
+                    Convert.ToInt32(vue["NoClient"]) == numero)
                 {
-                    MessageBox.Show(
-                        "Des soins sont planifiés pour cet invité : suppression impossible.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur :\n" + ex.Message);
-                return;
-            }
-
-            if (MessageBox.Show(
-                "Supprimer l'invité « " + nom + " » ?",
-                "Confirmation",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question) != DialogResult.Yes)
-                return;
-
-            if (ExecuterRequete(
-                "DELETE FROM Invite WHERE NoInvite = @no",
-                new SqlParameter("@no", no)))
-            {
-                MessageBox.Show("Invité supprimé.");
-                MettreAJourEtat();
-            }
-        }
-
-        private void FrmClientsInvites_Load(object sender, EventArgs e)
-        {
-            ChargerClients();
-        }
-
-        private void ChargerClients()
-        {
-            try
-            {
-                DataTable tableClients = new DataTable();
-
-                using (SqlConnection maConnexion =
-                       new SqlConnection(maChaineDeConnexion))
-                using (SqlDataAdapter adaptateur = new SqlDataAdapter(
-                       "SELECT * FROM Client", maConnexion))
-                {
-                    adaptateur.Fill(tableClients);
-                }
-
-                dgvClients.DataSource = tableClients;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur de chargement des clients :\n"
-                                + ex.Message);
-            }
-        }
-
-        private void ChargerInvites(int noClient)
-        {
-            try
-            {
-                DataTable tableInvites = new DataTable();
-
-                using (SqlConnection maConnexion =
-                       new SqlConnection(maChaineDeConnexion))
-                using (SqlCommand commande = new SqlCommand(
-                       "SELECT * FROM Invite WHERE NoClient = @noClient",
-                       maConnexion))
-                using (SqlDataAdapter adaptateur =
-                       new SqlDataAdapter(commande))
-                {
-                    commande.Parameters.AddWithValue("@noClient", noClient);
-                    adaptateur.Fill(tableInvites);
-                }
-
-                dgvInvites.DataSource = tableInvites;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur de chargement des invités :\n"
-                                + ex.Message);
-            }
-        }
-
-
-
-
-        private void dgvClients_SelectionChanged(object sender, EventArgs e)
-        {
-            if (dgvClients.CurrentRow == null ||
-                dgvClients.CurrentRow.IsNewRow)
-                return;
-
-            DataGridViewRow ligne = dgvClients.CurrentRow;
-
-            object valeur = LireValeurLigne(ligne, "NoClient");
-
-            if (valeur == null || valeur == DBNull.Value)
-                return;
-
-            if (!int.TryParse(valeur.ToString(), out int noClient))
-                return;
-
-            // Remplir les champs du client sélectionné
-            txtNoClient.Text = noClient.ToString();
-            txtNom.Text = Convert.ToString(LireValeurLigne(ligne, "Nom"));
-            txtPrenom.Text = Convert.ToString(LireValeurLigne(ligne, "Prenom"));
-            txtVille.Text = Convert.ToString(LireValeurLigne(ligne, "Ville"));
-            txtPays.Text = Convert.ToString(LireValeurLigne(ligne, "Pays"));
-            txtAdresse.Text = Convert.ToString(LireValeurLigne(ligne, "Adresse"));
-            txtCodePostal.Text = Convert.ToString(LireValeurLigne(ligne, "CodePostal"));
-            txtDateInscription.Text = Convert.ToString(
-                LireValeurLigne(ligne, "DateInscription"));
-
-            // Charger les invités de ce client
-            ChargerInvites(noClient);
-
-            // Mettre à jour les boutons
-            MettreAJourEtat();
-        }
-
-
-        private void dgvInvites_SelectionChanged(object sender, EventArgs e)
-        {
-            if (dgvInvites.CurrentRow == null ||
-                dgvInvites.CurrentRow.IsNewRow)
-            {
-                return;
-            }
-
-            DataGridViewRow ligne = dgvInvites.CurrentRow;
-
-            txtNoInvite.Text = Convert.ToString(
-                LireValeurLigne(ligne, "NoInvite"));
-
-            txtNomPrenomInvite.Text = Convert.ToString(
-                LireValeurLigne(ligne, "NomPrenom"));
-
-            MettreAJourEtat();
-        }
-
-
-        private object LireValeurLigne(
-            DataGridViewRow ligne,
-            string nomChamp)
-        {
-            if (ligne == null || ligne.DataGridView == null)
-                return null;
-
-            foreach (DataGridViewColumn colonne in ligne.DataGridView.Columns)
-            {
-                if (string.Equals(colonne.Name, nomChamp,
-                        StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(colonne.DataPropertyName, nomChamp,
-                        StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(colonne.HeaderText, nomChamp,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    return ligne.Cells[colonne.Index].Value;
+                    clientBindingSource.Position = i;
+                    break;
                 }
             }
 
-            
-            DataRowView client = ligne.DataBoundItem as DataRowView;
-
-            if (client != null &&
-                client.Row.Table.Columns.Contains(nomChamp))
-            {
-                return client[nomChamp];
-            }
-
-            return null;
+            FiltrerInvites();
         }
 
+        private void SelectionnerInvite(int numero)
+        {
+            for (int i = 0; i < inviteBindingSource.Count; i++)
+            {
+                DataRowView vue = inviteBindingSource[i] as DataRowView;
 
-
-
+                if (vue != null &&
+                    Convert.ToInt32(vue["NoInvite"]) == numero)
+                {
+                    inviteBindingSource.Position = i;
+                    break;
+                }
+            }
+        }
     }
 }

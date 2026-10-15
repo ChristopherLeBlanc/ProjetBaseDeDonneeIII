@@ -19,6 +19,7 @@ namespace ProjetBaseDeDonneeIII
 
         FrmUtilisateurs fU = new FrmUtilisateurs();
         FrmClientsInvites fCI = new FrmClientsInvites();
+        FrmSoins fS = new FrmSoins();
         public FrmMenu()
         {
             InitializeComponent();
@@ -73,7 +74,9 @@ namespace ProjetBaseDeDonneeIII
 
         private void mnuSoins_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fS.ShowDialog();
+            this.Show();
         }
 
         private void planifierDesSoinsToolStripMenuItem_Click(object sender, EventArgs e)
