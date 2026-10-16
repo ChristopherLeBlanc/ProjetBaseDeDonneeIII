@@ -23,6 +23,8 @@ namespace ProjetBaseDeDonneeIII
         FrmPlanifSoins fPS = new FrmPlanifSoins();
         FrmReservations fR = new FrmReservations();
         FrmTypesChambres fTC = new FrmTypesChambres();
+
+        FrmRapports fRP = new FrmRapports();
         public FrmMenu()
         {
             InitializeComponent();
@@ -105,7 +107,9 @@ namespace ProjetBaseDeDonneeIII
 
         private void mnuRapports_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fRP.ShowDialog();
+            this.Show();
         }
 
         private void mnuDeconnexion_Click(object sender, EventArgs e)

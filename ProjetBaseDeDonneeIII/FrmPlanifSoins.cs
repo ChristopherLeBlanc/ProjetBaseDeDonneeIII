@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
@@ -12,8 +13,6 @@ namespace ProjetBaseDeDonneeIII
 
         private bool modeAjout = false;
         private bool enChargement = false;
-
-        // La ligne créée par AddNew() pendant un ajout.
         private DataRowView ligneEnCours = null;
 
         public FrmPlanifSoins()
@@ -26,15 +25,9 @@ namespace ProjetBaseDeDonneeIII
             cmbSoin.SelectedIndexChanged -= cmbSoin_SelectedIndexChanged;
             cmbSoin.SelectedIndexChanged += cmbSoin_SelectedIndexChanged;
 
-            planifSoinBindingSource.CurrentChanged -=
-                planifSoinBindingSource_CurrentChanged;
-            planifSoinBindingSource.CurrentChanged +=
-                planifSoinBindingSource_CurrentChanged;
+            planifSoinBindingSource.CurrentChanged -= planifSoinBindingSource_CurrentChanged;
+            planifSoinBindingSource.CurrentChanged += planifSoinBindingSource_CurrentChanged;
         }
-
-        // =====================================================
-        // CHARGEMENT
-        // =====================================================
 
         private void FrmPlanifSoins_Load(object sender, EventArgs e)
         {
@@ -43,29 +36,21 @@ namespace ProjetBaseDeDonneeIII
                 ChargerPersonnes();
                 ChargerListeSoins();
                 ChargerHeures();
-
                 ChargerPlanifs();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Erreur de chargement :\n" + ex.Message,
-                    "Erreur",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show("Erreur de chargement :\n" + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private DataTable RemplirTable(
-            string requete, params SqlParameter[] parametres)
+        private DataTable RemplirTable(string requete, params SqlParameter[] parametres)
         {
-            using (SqlConnection connexion =
-                new SqlConnection(ConnexionBD.Chaine))
+            using (SqlConnection connexion = new SqlConnection(ConnexionBD.Chaine))
             {
                 connexion.Open();
 
-                using (SqlDataAdapter adaptateur =
-                    new SqlDataAdapter(requete, connexion))
+                using (SqlDataAdapter adaptateur = new SqlDataAdapter(requete, connexion))
                 {
                     adaptateur.SelectCommand.Parameters.AddRange(parametres);
 
@@ -76,20 +61,9 @@ namespace ProjetBaseDeDonneeIII
             }
         }
 
-        // Clients et invités : nom et numéro.
         private void ChargerPersonnes()
         {
-            string requete =
-                "SELECT NoClient AS NoPersonne, " +
-                "Prenom + ' ' + Nom + ' (' + " +
-                "CAST(NoClient AS varchar(10)) + ')' AS Affichage " +
-                "FROM Client " +
-                "UNION ALL " +
-                "SELECT NoInvite, " +
-                "NomPrenom + ' (' + " +
-                "CAST(NoInvite AS varchar(10)) + ')' " +
-                "FROM Invite " +
-                "ORDER BY Affichage";
+            string requete = "SELECT NoClient AS NoPersonne, Prenom + ' ' + Nom + ' (' + CAST(NoClient AS varchar(10)) + ')' AS Affichage FROM Client UNION ALL SELECT NoInvite, NomPrenom + ' (' + CAST(NoInvite AS varchar(10)) + ')' FROM Invite ORDER BY Affichage";
 
             enChargement = true;
 
@@ -101,15 +75,9 @@ namespace ProjetBaseDeDonneeIII
             enChargement = false;
         }
 
-        // Soins : numéro et description.
-        // Soins : numéro et description.
         private void ChargerListeSoins()
         {
-            string requete =
-                "SELECT NoSoin, " +
-                "CAST(NoSoin AS varchar(10)) + ' - ' + Description AS Affichage " +
-                "FROM Soin " +
-                "ORDER BY NoSoin";
+            string requete = "SELECT NoSoin, CAST(NoSoin AS varchar(10)) + ' - ' + Description AS Affichage FROM Soin ORDER BY NoSoin";
 
             enChargement = true;
 
@@ -121,18 +89,9 @@ namespace ProjetBaseDeDonneeIII
             enChargement = false;
         }
 
-        // Assistants (numéro, prénom, nom) qui offrent le soin choisi.
         private void ChargerAssistants(int noSoin)
         {
-            string requete =
-                "SELECT a.NoAssistant, " +
-                "CAST(a.NoAssistant AS varchar(10)) + ' - ' + " +
-                "a.Prenom + ' ' + a.Nom AS Affichage " +
-                "FROM Assistant a " +
-                "INNER JOIN AssistantSoin s " +
-                "ON s.NoAssistant = a.NoAssistant " +
-                "WHERE s.NoSoin = @NoSoin " +
-                "ORDER BY a.Nom, a.Prenom";
+            string requete = "SELECT a.NoAssistant, CAST(a.NoAssistant AS varchar(10)) + ' - ' + a.Prenom + ' ' + a.Nom AS Affichage FROM Assistant a INNER JOIN AssistantSoin s ON s.NoAssistant = a.NoAssistant WHERE s.NoSoin = @NoSoin ORDER BY a.Nom, a.Prenom";
 
             SqlParameter p = new SqlParameter("@NoSoin", SqlDbType.Int);
             p.Value = noSoin;
@@ -143,7 +102,6 @@ namespace ProjetBaseDeDonneeIII
             cmbAssistant.SelectedIndex = -1;
         }
 
-        // Heures de 8 h à 17 h.
         private void ChargerHeures()
         {
             cmbHeure.Items.Clear();
@@ -156,9 +114,7 @@ namespace ProjetBaseDeDonneeIII
 
         private void ChargerPlanifs()
         {
-            this.planifSoinTableAdapter.Fill(
-                this.bDB56Projet1CKWDataSet.PlanifSoin);
-
+            this.planifSoinTableAdapter.Fill(this.bDB56Projet1CKWDataSet.PlanifSoin);
             planifSoinBindingSource.ResetBindings(false);
 
             modeAjout = false;
@@ -168,12 +124,7 @@ namespace ProjetBaseDeDonneeIII
             MettreAJourEtat();
         }
 
-        // =====================================================
-        // AFFICHAGE DE LA RÉSERVATION SÉLECTIONNÉE
-        // =====================================================
-
-        private void planifSoinBindingSource_CurrentChanged(
-            object sender, EventArgs e)
+        private void planifSoinBindingSource_CurrentChanged(object sender, EventArgs e)
         {
             if (!modeAjout)
                 AfficherSelection();
@@ -181,8 +132,7 @@ namespace ProjetBaseDeDonneeIII
             MettreAJourEtat();
         }
 
-        private void cmbSoin_SelectedIndexChanged(
-            object sender, EventArgs e)
+        private void cmbSoin_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (enChargement)
                 return;
@@ -198,11 +148,9 @@ namespace ProjetBaseDeDonneeIII
             ChargerAssistants(noSoin.Value);
         }
 
-        // Retourne la valeur choisie d'une liste, ou null si rien n'est choisi.
         private int? ValeurChoisie(ComboBox liste)
         {
-            if (liste.SelectedValue == null ||
-                liste.SelectedValue is DataRowView)
+            if (liste.SelectedValue == null || liste.SelectedValue is DataRowView)
                 return null;
 
             return Convert.ToInt32(liste.SelectedValue);
@@ -213,8 +161,7 @@ namespace ProjetBaseDeDonneeIII
             if (modeAjout)
                 return;
 
-            DataRowView ligne =
-                planifSoinBindingSource.Current as DataRowView;
+            DataRowView ligne = planifSoinBindingSource.Current as DataRowView;
 
             if (ligne == null)
             {
@@ -225,30 +172,17 @@ namespace ProjetBaseDeDonneeIII
                 return;
             }
 
-            cmbPersonne.SelectedValue =
-                Convert.ToInt32(ligne["NoPersonne"]);
-
-            // Charge aussi la liste des assistants de ce soin.
-            cmbSoin.SelectedValue =
-                Convert.ToInt32(ligne["NoSoin"]);
-
-            cmbAssistant.SelectedValue =
-                Convert.ToInt32(ligne["NoAssistant"]);
+            cmbPersonne.SelectedValue = Convert.ToInt32(ligne["NoPersonne"]);
+            cmbSoin.SelectedValue = Convert.ToInt32(ligne["NoSoin"]);
+            cmbAssistant.SelectedValue = Convert.ToInt32(ligne["NoAssistant"]);
 
             DateTime dateHeure = Convert.ToDateTime(ligne["DateHeure"]);
 
             dtpDate.Value = dateHeure.Date;
 
             int index = dateHeure.Hour - HEURE_DEBUT;
-
-            cmbHeure.SelectedIndex =
-                (index >= 0 && index < cmbHeure.Items.Count)
-                    ? index : -1;
+            cmbHeure.SelectedIndex = (index >= 0 && index < cmbHeure.Items.Count) ? index : -1;
         }
-
-        // =====================================================
-        // ÉTAT DES CONTRÔLES
-        // =====================================================
 
         private void MettreAJourEtat()
         {
@@ -259,20 +193,14 @@ namespace ProjetBaseDeDonneeIII
             btnAnnuler.Enabled = modeAjout;
             btnSupprimer.Enabled = !modeAjout && aUneLigne;
 
-            // Les champs ne sont modifiables que pendant l'ajout.
             cmbPersonne.Enabled = modeAjout;
             cmbSoin.Enabled = modeAjout;
             cmbAssistant.Enabled = modeAjout;
             dtpDate.Enabled = modeAjout;
             cmbHeure.Enabled = modeAjout;
 
-            // Empêcher de changer de ligne pendant l'ajout.
             dgvPlanifSoins.Enabled = !modeAjout;
         }
-
-        // =====================================================
-        // AJOUTER
-        // =====================================================
 
         private void btnAjouter_Click(object sender, EventArgs e)
         {
@@ -280,9 +208,7 @@ namespace ProjetBaseDeDonneeIII
                 return;
 
             modeAjout = true;
-
-            ligneEnCours =
-                (DataRowView)planifSoinBindingSource.AddNew();
+            ligneEnCours = (DataRowView)planifSoinBindingSource.AddNew();
 
             errMessage.Clear();
 
@@ -296,48 +222,30 @@ namespace ProjetBaseDeDonneeIII
             cmbPersonne.Focus();
         }
 
-        // =====================================================
-        // SUPPRIMER
-        // =====================================================
-
         private void btnSupprimer_Click(object sender, EventArgs e)
         {
             if (modeAjout)
             {
-                MessageBox.Show(
-                    "Enregistrez ou annulez l'opération en cours.");
+                MessageBox.Show("Enregistrez ou annulez l'opération en cours.");
                 return;
             }
 
             if (planifSoinBindingSource.Current == null)
             {
-                MessageBox.Show(
-                    "Veuillez sélectionner une réservation.");
+                MessageBox.Show("Veuillez sélectionner une réservation.");
                 return;
             }
 
-            DataRowView ligne =
-                (DataRowView)planifSoinBindingSource.Current;
-
+            DataRowView ligne = (DataRowView)planifSoinBindingSource.Current;
             DateTime dateHeure = Convert.ToDateTime(ligne["DateHeure"]);
 
-            // On ne peut pas supprimer un soin déjà offert.
             if (dateHeure <= DateTime.Now)
             {
-                MessageBox.Show(
-                    "Impossible de supprimer ce soin : il a déjà été offert.",
-                    "Suppression refusée",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
+                MessageBox.Show("Impossible de supprimer ce soin : il a déjà été offert.", "Suppression refusée", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            DialogResult reponse = MessageBox.Show(
-                "Voulez-vous vraiment supprimer cette réservation du " +
-                dateHeure.ToString("yyyy-MM-dd HH:mm") + " ?",
-                "Confirmation",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
+            DialogResult reponse = MessageBox.Show("Voulez-vous vraiment supprimer cette réservation du " + dateHeure.ToString("yyyy-MM-dd HH:mm") + " ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (reponse != DialogResult.Yes)
                 return;
@@ -349,30 +257,16 @@ namespace ProjetBaseDeDonneeIII
                 this.Validate();
                 planifSoinBindingSource.EndEdit();
 
-                this.tableAdapterManager.UpdateAll(
-                    this.bDB56Projet1CKWDataSet);
+                this.tableAdapterManager.UpdateAll(this.bDB56Projet1CKWDataSet);
 
-                MessageBox.Show(
-                    "La réservation a été supprimée.",
-                    "Suppression",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageBox.Show("La réservation a été supprimée.", "Suppression", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Erreur lors de la suppression :\n" + ex.Message,
-                    "Erreur",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
+                MessageBox.Show("Erreur lors de la suppression :\n" + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ChargerPlanifs();
             }
         }
-
-        // =====================================================
-        // ENREGISTRER
-        // =====================================================
 
         private void btnEnregistrer_Click(object sender, EventArgs e)
         {
@@ -391,7 +285,6 @@ namespace ProjetBaseDeDonneeIII
                 int noAssistant = ValeurChoisie(cmbAssistant).Value;
                 DateTime dateHeure = DateReservation();
 
-                // Compléter la nouvelle ligne (la clé complète).
                 ligneEnCours["NoPersonne"] = noPersonne;
                 ligneEnCours["NoAssistant"] = noAssistant;
                 ligneEnCours["DateHeure"] = dateHeure;
@@ -400,27 +293,16 @@ namespace ProjetBaseDeDonneeIII
                 this.Validate();
                 planifSoinBindingSource.EndEdit();
 
-                this.tableAdapterManager.UpdateAll(
-                    this.bDB56Projet1CKWDataSet);
+                this.tableAdapterManager.UpdateAll(this.bDB56Projet1CKWDataSet);
 
                 ChargerPlanifs();
-                SelectionnerReservation(
-                    noPersonne, noAssistant, dateHeure);
+                SelectionnerReservation(noPersonne, noAssistant, dateHeure);
 
-                MessageBox.Show(
-                    "La réservation a été enregistrée " +
-                    "dans la base de données.",
-                    "Enregistrement",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageBox.Show("La réservation a été enregistrée dans la base de données.", "Enregistrement", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Erreur lors de l'enregistrement :\n" + ex.Message,
-                    "Erreur",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show("Erreur lors de l'enregistrement :\n" + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -430,43 +312,34 @@ namespace ProjetBaseDeDonneeIII
             return dtpDate.Value.Date.AddHours(heure);
         }
 
-        // =====================================================
-        // VALIDATION
-        // =====================================================
-
         private bool ValiderChamps()
         {
             errMessage.Clear();
 
             if (ValeurChoisie(cmbPersonne) == null)
             {
-                errMessage.SetError(
-                    cmbPersonne, "Choisissez un client ou un invité.");
+                errMessage.SetError(cmbPersonne, "Choisissez un client ou un invité.");
                 cmbPersonne.Focus();
                 return false;
             }
 
             if (ValeurChoisie(cmbSoin) == null)
             {
-                errMessage.SetError(
-                    cmbSoin, "Choisissez un soin.");
+                errMessage.SetError(cmbSoin, "Choisissez un soin.");
                 cmbSoin.Focus();
                 return false;
             }
 
             if (ValeurChoisie(cmbAssistant) == null)
             {
-                errMessage.SetError(
-                    cmbAssistant, "Choisissez un assistant.");
+                errMessage.SetError(cmbAssistant, "Choisissez un assistant.");
                 cmbAssistant.Focus();
                 return false;
             }
 
             if (cmbHeure.SelectedIndex < 0)
             {
-                errMessage.SetError(
-                    cmbHeure,
-                    "Choisissez l'heure de la réservation.");
+                errMessage.SetError(cmbHeure, "Choisissez l'heure de la réservation.");
                 cmbHeure.Focus();
                 return false;
             }
@@ -475,30 +348,21 @@ namespace ProjetBaseDeDonneeIII
 
             if (date < DateTime.Today)
             {
-                errMessage.SetError(
-                    dtpDate,
-                    "La date ne doit pas être antérieure à aujourd'hui.");
+                errMessage.SetError(dtpDate, "La date ne doit pas être antérieure à aujourd'hui.");
                 dtpDate.Focus();
                 return false;
             }
 
-            if (date.DayOfWeek == DayOfWeek.Saturday ||
-                date.DayOfWeek == DayOfWeek.Sunday)
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
             {
-                errMessage.SetError(
-                    dtpDate,
-                    "La date ne peut pas être un samedi ou un dimanche.");
+                errMessage.SetError(dtpDate, "La date ne peut pas être un samedi ou un dimanche.");
                 dtpDate.Focus();
                 return false;
             }
 
-            if (AssistantOccupe(
-                    ValeurChoisie(cmbAssistant).Value,
-                    DateReservation()))
+            if (AssistantOccupe(ValeurChoisie(cmbAssistant).Value, DateReservation()))
             {
-                errMessage.SetError(
-                    cmbAssistant,
-                    "Cet assistant a déjà un soin à cette date et heure.");
+                errMessage.SetError(cmbAssistant, "Cet assistant a déjà un soin à cette date et heure.");
                 cmbAssistant.Focus();
                 return false;
             }
@@ -506,71 +370,44 @@ namespace ProjetBaseDeDonneeIII
             return true;
         }
 
-        // Un assistant ne peut pas donner deux soins à la même date/heure.
         private bool AssistantOccupe(int noAssistant, DateTime dateHeure)
         {
-            using (SqlConnection connexion =
-                new SqlConnection(ConnexionBD.Chaine))
+            using (SqlConnection connexion = new SqlConnection(ConnexionBD.Chaine))
             {
                 connexion.Open();
 
-                string requete =
-                    "SELECT COUNT(*) FROM PlanifSoin " +
-                    "WHERE NoAssistant = @NoAssistant " +
-                    "AND DateHeure = @DateHeure";
+                string requete = "SELECT COUNT(*) FROM PlanifSoin WHERE NoAssistant = @NoAssistant AND DateHeure = @DateHeure";
 
-                using (SqlCommand commande =
-                    new SqlCommand(requete, connexion))
+                using (SqlCommand commande = new SqlCommand(requete, connexion))
                 {
-                    commande.Parameters.Add(
-                        "@NoAssistant", SqlDbType.Int).Value = noAssistant;
-                    commande.Parameters.Add(
-                        "@DateHeure", SqlDbType.DateTime).Value = dateHeure;
+                    commande.Parameters.Add("@NoAssistant", SqlDbType.Int).Value = noAssistant;
+                    commande.Parameters.Add("@DateHeure", SqlDbType.DateTime).Value = dateHeure;
 
-                    return Convert.ToInt32(
-                        commande.ExecuteScalar()) > 0;
+                    return Convert.ToInt32(commande.ExecuteScalar()) > 0;
                 }
             }
         }
-
-        // =====================================================
-        // ANNULER
-        // =====================================================
 
         private void btnAnnuler_Click(object sender, EventArgs e)
         {
             planifSoinBindingSource.CancelEdit();
             bDB56Projet1CKWDataSet.PlanifSoin.RejectChanges();
-
             planifSoinBindingSource.ResetBindings(false);
 
             errMessage.Clear();
 
             ChargerPlanifs();
 
-            MessageBox.Show(
-                "Les modifications non enregistrées ont été annulées.",
-                "Annulation",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            MessageBox.Show("Les modifications non enregistrées ont été annulées.", "Annulation", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        // =====================================================
-        // SÉLECTIONNER UNE RÉSERVATION APRÈS UNE OPÉRATION
-        // =====================================================
-
-        private void SelectionnerReservation(
-            int noPersonne, int noAssistant, DateTime dateHeure)
+        private void SelectionnerReservation(int noPersonne, int noAssistant, DateTime dateHeure)
         {
             for (int i = 0; i < planifSoinBindingSource.Count; i++)
             {
-                DataRowView vue =
-                    planifSoinBindingSource[i] as DataRowView;
+                DataRowView vue = planifSoinBindingSource[i] as DataRowView;
 
-                if (vue != null &&
-                    Convert.ToInt32(vue["NoPersonne"]) == noPersonne &&
-                    Convert.ToInt32(vue["NoAssistant"]) == noAssistant &&
-                    Convert.ToDateTime(vue["DateHeure"]) == dateHeure)
+                if (vue != null && Convert.ToInt32(vue["NoPersonne"]) == noPersonne && Convert.ToInt32(vue["NoAssistant"]) == noAssistant && Convert.ToDateTime(vue["DateHeure"]) == dateHeure)
                 {
                     planifSoinBindingSource.Position = i;
                     break;
