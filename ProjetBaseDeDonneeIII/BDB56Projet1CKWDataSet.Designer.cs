@@ -74,6 +74,8 @@ namespace ProjetBaseDeDonneeIII {
         
         private global::System.Data.DataRelation relationFK_NoAssistant1;
         
+        private global::System.Data.DataRelation relationFK_NoSoin1;
+        
         private global::System.Data.SchemaSerializationMode _schemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -539,6 +541,7 @@ namespace ProjetBaseDeDonneeIII {
             this.relationfk_NoTypeSoin = this.Relations["fk_NoTypeSoin"];
             this.relationFK_Utilisateur_Type = this.Relations["FK_Utilisateur_Type"];
             this.relationFK_NoAssistant1 = this.Relations["FK_NoAssistant1"];
+            this.relationFK_NoSoin1 = this.Relations["FK_NoSoin1"];
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -621,6 +624,10 @@ namespace ProjetBaseDeDonneeIII {
                         this.tableAssistant.NoAssistantColumn}, new global::System.Data.DataColumn[] {
                         this.tableSoinsAss.NoAssistantColumn}, false);
             this.Relations.Add(this.relationFK_NoAssistant1);
+            this.relationFK_NoSoin1 = new global::System.Data.DataRelation("FK_NoSoin1", new global::System.Data.DataColumn[] {
+                        this.tableSoin.NoSoinColumn}, new global::System.Data.DataColumn[] {
+                        this.tableSoinsAss.NoSoinColumn}, false);
+            this.Relations.Add(this.relationFK_NoSoin1);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -4800,6 +4807,8 @@ namespace ProjetBaseDeDonneeIII {
             
             private global::System.Data.DataColumn columnPrix;
             
+            private global::System.Data.DataColumn columnNoSoin;
+            
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
             public SoinsAssDataTable() {
@@ -4875,6 +4884,14 @@ namespace ProjetBaseDeDonneeIII {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+            public global::System.Data.DataColumn NoSoinColumn {
+                get {
+                    return this.columnNoSoin;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -4910,20 +4927,32 @@ namespace ProjetBaseDeDonneeIII {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
-            public SoinsAssRow AddSoinsAssRow(AssistantRow parentAssistantRowByFK_NoAssistant1, string Description, int Duree, int NoTypeSoin, decimal Prix) {
+            public SoinsAssRow AddSoinsAssRow(AssistantRow parentAssistantRowByFK_NoAssistant1, string Description, int Duree, int NoTypeSoin, decimal Prix, SoinRow parentSoinRowByFK_NoSoin1) {
                 SoinsAssRow rowSoinsAssRow = ((SoinsAssRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         null,
                         Description,
                         Duree,
                         NoTypeSoin,
-                        Prix};
+                        Prix,
+                        null};
                 if ((parentAssistantRowByFK_NoAssistant1 != null)) {
                     columnValuesArray[0] = parentAssistantRowByFK_NoAssistant1[0];
+                }
+                if ((parentSoinRowByFK_NoSoin1 != null)) {
+                    columnValuesArray[5] = parentSoinRowByFK_NoSoin1[0];
                 }
                 rowSoinsAssRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowSoinsAssRow);
                 return rowSoinsAssRow;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+            public SoinsAssRow FindByNoAssistantNoSoin(int NoAssistant, int NoSoin) {
+                return ((SoinsAssRow)(this.Rows.Find(new object[] {
+                            NoAssistant,
+                            NoSoin})));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -4948,6 +4977,7 @@ namespace ProjetBaseDeDonneeIII {
                 this.columnDuree = base.Columns["Duree"];
                 this.columnNoTypeSoin = base.Columns["NoTypeSoin"];
                 this.columnPrix = base.Columns["Prix"];
+                this.columnNoSoin = base.Columns["NoSoin"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -4963,8 +4993,14 @@ namespace ProjetBaseDeDonneeIII {
                 base.Columns.Add(this.columnNoTypeSoin);
                 this.columnPrix = new global::System.Data.DataColumn("Prix", typeof(decimal), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnPrix);
+                this.columnNoSoin = new global::System.Data.DataColumn("NoSoin", typeof(int), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnNoSoin);
+                this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
+                                this.columnNoAssistant,
+                                this.columnNoSoin}, true));
                 this.columnNoAssistant.AllowDBNull = false;
                 this.columnDescription.MaxLength = 50;
+                this.columnNoSoin.AllowDBNull = false;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -6338,6 +6374,17 @@ namespace ProjetBaseDeDonneeIII {
                     return ((PlanifSoinRow[])(base.GetChildRows(this.Table.ChildRelations["FK_PlanifSoin_Soin"])));
                 }
             }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+            public SoinsAssRow[] GetSoinsAssRows() {
+                if ((this.Table.ChildRelations["FK_NoSoin1"] == null)) {
+                    return new SoinsAssRow[0];
+                }
+                else {
+                    return ((SoinsAssRow[])(base.GetChildRows(this.Table.ChildRelations["FK_NoSoin1"])));
+                }
+            }
         }
         
         /// <summary>
@@ -6831,12 +6878,34 @@ namespace ProjetBaseDeDonneeIII {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+            public int NoSoin {
+                get {
+                    return ((int)(this[this.tableSoinsAss.NoSoinColumn]));
+                }
+                set {
+                    this[this.tableSoinsAss.NoSoinColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
             public AssistantRow AssistantRow {
                 get {
                     return ((AssistantRow)(this.GetParentRow(this.Table.ParentRelations["FK_NoAssistant1"])));
                 }
                 set {
                     this.SetParentRow(value, this.Table.ParentRelations["FK_NoAssistant1"]);
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+            public SoinRow SoinRow {
+                get {
+                    return ((SoinRow)(this.GetParentRow(this.Table.ParentRelations["FK_NoSoin1"])));
+                }
+                set {
+                    this.SetParentRow(value, this.Table.ParentRelations["FK_NoSoin1"]);
                 }
             }
             
@@ -12427,6 +12496,7 @@ SELECT NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur FROM Utilisa
             tableMapping.ColumnMappings.Add("Duree", "Duree");
             tableMapping.ColumnMappings.Add("NoTypeSoin", "NoTypeSoin");
             tableMapping.ColumnMappings.Add("Prix", "Prix");
+            tableMapping.ColumnMappings.Add("NoSoin", "NoSoin");
             this._adapter.TableMappings.Add(tableMapping);
         }
         
@@ -12443,7 +12513,7 @@ SELECT NoUtilisateur, NomUtilisateur, MotDePasse, NoTypeUtilisateur FROM Utilisa
             this._commandCollection = new global::System.Data.SqlClient.SqlCommand[1];
             this._commandCollection[0] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = @"SELECT        AssistantSoin.NoAssistant, Soin.Description, Soin.Duree, Soin.NoTypeSoin, Soin.Prix
+            this._commandCollection[0].CommandText = @"SELECT        AssistantSoin.NoAssistant,  AssistantSoin.NoSoin,Soin.Description, Soin.Duree, Soin.NoTypeSoin, Soin.Prix
 FROM            Assistant INNER JOIN
                          AssistantSoin ON Assistant.NoAssistant = AssistantSoin.NoAssistant INNER JOIN
                          Soin ON AssistantSoin.NoSoin = Soin.NoSoin where  AssistantSoin.NoAssistant = @NoAssistant";

@@ -13,11 +13,14 @@ namespace ProjetBaseDeDonneeIII
 {
     public partial class FrmAssistantsSoins : Form
     {
+        String maChaineDeConnexion = "Data Source=tcp:424sql.cgodin.qc.ca,5433;Initial Catalog=BDB56Projet1CKW;Persist Security Info=True;User ID=B56Projet1CKW;Password=Password2;Encrypt=True;TrustServerCertificate=True";
       
-        String maChaineDeConnexion = "Data Source=424sql.cgodin.qc.ca,5433;Initial Catalog=BDB56Carter;User ID=B56Carter;Password=Mxltoonooragan@futur";
         SqlConnection maConnexion = new SqlConnection();
 
         int largeur;
+        int positionOrigineAssistant;   // field, at the top of the class
+        bool modeAjout = false;
+        Boolean ajoutSoins = false;
         public FrmAssistantsSoins()
         {
             InitializeComponent();
@@ -44,6 +47,8 @@ namespace ProjetBaseDeDonneeIII
             Size interieur = this.ClientSize;  // usable area inside the borders
             int largeurUtile = this.ClientSize.Width;
             int hauteurUtile = this.ClientSize.Height;
+            positionOrigineAssistant = assistantDataGridView.Left;
+
 
         }
 
@@ -78,11 +83,12 @@ namespace ProjetBaseDeDonneeIII
 
         private void BtnAjoutAss_Click(object sender, EventArgs e)
         {
+            modeAjout = true;
             assistantBindingSource.AddNew();
             AfficherBoutons(false);
             AfficherTexteAss(true);
 
-            FocusAssistant();
+            FocusAssistant(true);
 
             noAssistantTextBox.Enabled = false;
             int noAssistantMax = bDB56Projet1CKWDataSet.Assistant.Rows.Cast<DataRow>().Max(row => Convert.ToInt32(row["NoAssistant"]))+1;
@@ -96,10 +102,20 @@ namespace ProjetBaseDeDonneeIII
             BtnConfirmer.Visible = visible;
         }
 
-        private void FocusAssistant()
+        private void FocusAssistant(Boolean focus)
         {
-            soinsAssDataGridView.Hide();
-            assistantDataGridView.Left = (ClientSize.Width - assistantDataGridView.Width) / 2;
+            if (focus)
+            {
+                soinsAssDataGridView.Hide();
+                assistantDataGridView.Left = (ClientSize.Width - assistantDataGridView.Width) / 2;
+                AfficherBtnConfirmer(true);
+            }
+            else
+            {
+                soinsAssDataGridView.Show();
+                assistantDataGridView.Left = positionOrigineAssistant;
+                AfficherBtnConfirmer(false);
+            }
         }
 
         private void AfficherTexteAss(Boolean visible)
@@ -177,5 +193,141 @@ namespace ProjetBaseDeDonneeIII
         {
 
         }
+
+      
+
+
+        private void BtnConfirmer_Click(object sender, EventArgs e)
+        {
+            ErrorProvider errMessage = new ErrorProvider();
+            errMessage.Clear();
+            bool valide = true;
+            
+            if (string.IsNullOrWhiteSpace(prenomTextBox.Text))
+            { errMessage.SetError(prenomTextBox, "Le prénom est requis."); valide = false; }
+
+            if (string.IsNullOrWhiteSpace(nomTextBox.Text))
+            { errMessage.SetError(nomTextBox, "Le nom est requis."); valide = false; }
+
+            if (string.IsNullOrWhiteSpace(specialitesTextBox.Text))
+            { errMessage.SetError(specialitesTextBox, "La spécialité est requise."); valide = false; }
+
+
+            if (!valide) return;
+            AfficherBtnConfirmer(valide);
+            try
+            {
+                this.Validate();                     
+                assistantBindingSource.EndEdit();   
+                assistantTableAdapter.Update(bDB56Projet1CKWDataSet.Assistant);
+                if(modeAjout)
+                {
+                    MessageBox.Show("Assistant ajouté.");
+                }
+                else
+                {
+                    MessageBox.Show("Assistant modifié.");
+                }
+                AfficherBoutons(true);
+                AfficherBtnConfirmer(false);
+                FocusAssistant(false);
+                AfficherTexteAss(false);
+
+            }
+
+            catch (SqlException ex)
+            {
+                MessageBox.Show("Erreur lors de l'enregistrement : " + ex.Message);
+            }
+        }
+
+        private void BtnModAss_Click(object sender, EventArgs e)
+        {
+            modeAjout = false;
+            AfficherBoutons(false);
+            AfficherTexteAss(true);
+
+            FocusAssistant(true);
+
+            noAssistantTextBox.Enabled = false;
+        }
+
+        private void BtnSuppAss_Click(object sender, EventArgs e)
+        {
+            if (!(assistantBindingSource.Current is DataRowView drv) || drv["NoAssistant"] == DBNull.Value)
+            {
+                MessageBox.Show("Veuillez sélectionner un assistant.");
+                return;
+            }
+
+            int noAssistant = Convert.ToInt32(drv["NoAssistant"]);
+
+            using (SqlConnection conn = new SqlConnection(maChaineDeConnexion))
+            {
+                conn.Open();
+
+                SqlCommand verif = new SqlCommand("SELECT COUNT(*) FROM PlanifSoin WHERE NoAssistant = @no", conn);
+                verif.Parameters.AddWithValue("@no", noAssistant);
+                if ((int)verif.ExecuteScalar() > 0)
+                {
+                    MessageBox.Show("Des soins planifiés sont assignés à cet assistant.",
+                        "Suppression refusée", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    {
+                        return;
+                            };
+                }
+
+                if (MessageBox.Show($"Supprimer {drv["Prenom"]} {drv["Nom"]} et tous les soins qu'il offre ?",
+                        "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return; 
+                };
+
+                using (SqlTransaction tryconn = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        SqlCommand cmdSoins = new SqlCommand("DELETE FROM AssistantSoin WHERE NoAssistant = @no", conn, tryconn);
+                        cmdSoins.Parameters.AddWithValue("@no", noAssistant);
+                        cmdSoins.ExecuteNonQuery();
+                        SqlCommand cmdAss = new SqlCommand("DELETE FROM Assistant WHERE NoAssistant = @no", conn, tryconn);
+                        cmdAss.Parameters.AddWithValue("@no", noAssistant);
+                        cmdAss.ExecuteNonQuery();
+
+                        tryconn.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        tryconn.Rollback();
+                        MessageBox.Show("Erreur, aucune suppression effectuée : " + ex.Message);
+                        return;
+                    }
+                }
+            }
+            assistantTableAdapter.Fill(bDB56Projet1CKWDataSet.Assistant);
+            assistantSoinTableAdapter.Fill(bDB56Projet1CKWDataSet.AssistantSoin);
+        }
+
+
+
+        private void BtnAjoutSoins_Click(object sender, EventArgs e)
+        {
+            comSoins.Visible = true;
+            comSoins.Enabled = true;
+            var dejaOfferts = bDB56Projet1CKWDataSet.SoinsAss.AsEnumerable()
+                .Select(r => r["NoSoin"].ToString())
+                .ToList();
+
+            FocusAssistant(true);
+            AfficherBoutons(false);
+            AfficherBtnConfirmer(true);
+            AfficherTexteAss(false);
+            DataView dv = new DataView(bDB56Projet1CKWDataSet.Soin);
+            if (dejaOfferts.Count > 0)
+                dv.RowFilter = $"NoSoin NOT IN ({string.Join(",", dejaOfferts)})";
+            comSoins.DataSource = dv;
+            comSoins.DisplayMember = "Description";
+            comSoins.ValueMember = "NoSoin";
+        }
     }
-}
+    }

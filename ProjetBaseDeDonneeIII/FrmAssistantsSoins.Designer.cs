@@ -65,12 +65,17 @@
             this.specLabel = new System.Windows.Forms.Label();
             this.remarqueLabel = new System.Windows.Forms.Label();
             this.BtnConfirmer = new System.Windows.Forms.Button();
+            this.btnAjouterSoins = new System.Windows.Forms.Button();
+            this.BtnRetour = new System.Windows.Forms.Button();
+            this.soinsAssBindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.comSoins = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.assistantBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bDB56Projet1CKWDataSet)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.assistantSoinBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssDataGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.assistantDataGridView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.soinsAssBindingSource1)).BeginInit();
             this.SuspendLayout();
             // 
             // assistantBindingSource
@@ -235,6 +240,7 @@
             this.BtnModAss.TabIndex = 3;
             this.BtnModAss.Text = "Modifier un assistant";
             this.BtnModAss.UseVisualStyleBackColor = true;
+            this.BtnModAss.Click += new System.EventHandler(this.BtnModAss_Click);
             // 
             // BtnAjoutSoins
             // 
@@ -244,6 +250,7 @@
             this.BtnAjoutSoins.TabIndex = 4;
             this.BtnAjoutSoins.Text = "Ajouter un soin a un Assistant";
             this.BtnAjoutSoins.UseVisualStyleBackColor = true;
+            this.BtnAjoutSoins.Click += new System.EventHandler(this.BtnAjoutSoins_Click);
             // 
             // BtnSuppSoins
             // 
@@ -263,6 +270,7 @@
             this.BtnSuppAss.TabIndex = 6;
             this.BtnSuppAss.Text = "Supprimer un Assistant";
             this.BtnSuppAss.UseVisualStyleBackColor = true;
+            this.BtnSuppAss.Click += new System.EventHandler(this.BtnSuppAss_Click);
             // 
             // noAssistantTextBox
             // 
@@ -363,12 +371,50 @@
             this.BtnConfirmer.Text = "Confirmer";
             this.BtnConfirmer.UseVisualStyleBackColor = true;
             this.BtnConfirmer.Visible = false;
+            this.BtnConfirmer.Click += new System.EventHandler(this.BtnConfirmer_Click);
+            // 
+            // btnAjouterSoins
+            // 
+            this.btnAjouterSoins.Location = new System.Drawing.Point(543, 396);
+            this.btnAjouterSoins.Name = "btnAjouterSoins";
+            this.btnAjouterSoins.Size = new System.Drawing.Size(102, 42);
+            this.btnAjouterSoins.TabIndex = 23;
+            this.btnAjouterSoins.Text = "Ajouter ce soins";
+            this.btnAjouterSoins.UseVisualStyleBackColor = true;
+            this.btnAjouterSoins.Visible = false;
+            // 
+            // BtnRetour
+            // 
+            this.BtnRetour.Location = new System.Drawing.Point(717, 430);
+            this.BtnRetour.Name = "BtnRetour";
+            this.BtnRetour.Size = new System.Drawing.Size(75, 23);
+            this.BtnRetour.TabIndex = 24;
+            this.BtnRetour.Text = "Retourner";
+            this.BtnRetour.UseVisualStyleBackColor = true;
+            this.BtnRetour.Visible = false;
+            // 
+            // soinsAssBindingSource1
+            // 
+            this.soinsAssBindingSource1.DataMember = "SoinsAss";
+            this.soinsAssBindingSource1.DataSource = this.bDB56Projet1CKWDataSet;
+            // 
+            // comSoins
+            // 
+            this.comSoins.FormattingEnabled = true;
+            this.comSoins.Location = new System.Drawing.Point(448, 295);
+            this.comSoins.Name = "comSoins";
+            this.comSoins.Size = new System.Drawing.Size(296, 21);
+            this.comSoins.TabIndex = 25;
+            this.comSoins.Visible = false;
             // 
             // FrmAssistantsSoins
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1178, 603);
+            this.Controls.Add(this.comSoins);
+            this.Controls.Add(this.BtnRetour);
+            this.Controls.Add(this.btnAjouterSoins);
             this.Controls.Add(this.BtnConfirmer);
             this.Controls.Add(this.remarqueLabel);
             this.Controls.Add(this.specLabel);
@@ -396,6 +442,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssDataGridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.assistantDataGridView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.soinsAssBindingSource1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -438,5 +485,9 @@
         private System.Windows.Forms.Label specLabel;
         private System.Windows.Forms.Label remarqueLabel;
         private System.Windows.Forms.Button BtnConfirmer;
+        private System.Windows.Forms.Button btnAjouterSoins;
+        private System.Windows.Forms.Button BtnRetour;
+        private System.Windows.Forms.BindingSource soinsAssBindingSource1;
+        private System.Windows.Forms.ComboBox comSoins;
     }
 }
