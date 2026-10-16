@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BDB56Projet1CKWDataSet.cs">
+      <DependentUpon>BDB56Projet1CKWDataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="BDB56Projet1CKWDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -116,6 +119,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Session.cs" />
+    <EmbeddedResource Include="FrmAssistantsSoins.resx">
+      <DependentUpon>FrmAssistantsSoins.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmClientsInvites.resx">
       <DependentUpon>FrmClientsInvites.cs</DependentUpon>
     </EmbeddedResource>

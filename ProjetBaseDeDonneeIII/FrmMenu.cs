@@ -20,6 +20,8 @@ namespace ProjetBaseDeDonneeIII
         FrmUtilisateurs fU = new FrmUtilisateurs();
         FrmClientsInvites fCI = new FrmClientsInvites();
         FrmSoins fS = new FrmSoins();
+
+        FrmAssistantsSoins fAS = new FrmAssistantsSoins();
         public FrmMenu()
         {
             InitializeComponent();
@@ -70,6 +72,11 @@ namespace ProjetBaseDeDonneeIII
         private void mnuAssistants_Click(object sender, EventArgs e)
         {
 
+
+            this.Hide();
+            fAS.ShowDialog();
+            this.Show();
+
         }
 
         private void mnuSoins_Click(object sender, EventArgs e)
@@ -117,6 +124,11 @@ namespace ProjetBaseDeDonneeIII
                 Deconnexion = false;
                 Close();
             }
+        }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -40,18 +40,21 @@
             this.mnuRapports = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDeconnexion = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuQuitter = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.déconnecterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
             // 
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuPlanifSoins});
+            this.mnuPlanifSoins,
+            this.optionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 33);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -69,78 +72,100 @@
             this.mnuDeconnexion,
             this.mnuQuitter});
             this.mnuPlanifSoins.Name = "mnuPlanifSoins";
-            this.mnuPlanifSoins.Size = new System.Drawing.Size(73, 29);
+            this.mnuPlanifSoins.Size = new System.Drawing.Size(50, 20);
             this.mnuPlanifSoins.Text = "Menu";
             // 
             // mnuUtilisateurs
             // 
             this.mnuUtilisateurs.Name = "mnuUtilisateurs";
-            this.mnuUtilisateurs.Size = new System.Drawing.Size(301, 34);
+            this.mnuUtilisateurs.Size = new System.Drawing.Size(197, 22);
             this.mnuUtilisateurs.Text = "Utilisateurs";
             this.mnuUtilisateurs.Click += new System.EventHandler(this.mnuUtilisateurs_Click);
             // 
             // mnuClients
             // 
             this.mnuClients.Name = "mnuClients";
-            this.mnuClients.Size = new System.Drawing.Size(301, 34);
+            this.mnuClients.Size = new System.Drawing.Size(197, 22);
             this.mnuClients.Text = "Clients et invités";
             this.mnuClients.Click += new System.EventHandler(this.mnuClients_Click);
             // 
             // mnuAssistants
             // 
             this.mnuAssistants.Name = "mnuAssistants";
-            this.mnuAssistants.Size = new System.Drawing.Size(301, 34);
+            this.mnuAssistants.Size = new System.Drawing.Size(197, 22);
             this.mnuAssistants.Text = "Assistants et leurs soins";
             this.mnuAssistants.Click += new System.EventHandler(this.mnuAssistants_Click);
             // 
             // mnuSoins
             // 
             this.mnuSoins.Name = "mnuSoins";
-            this.mnuSoins.Size = new System.Drawing.Size(301, 34);
+            this.mnuSoins.Size = new System.Drawing.Size(197, 22);
             this.mnuSoins.Text = "Soins";
             this.mnuSoins.Click += new System.EventHandler(this.mnuSoins_Click);
             // 
             // planifierDesSoinsToolStripMenuItem
             // 
             this.planifierDesSoinsToolStripMenuItem.Name = "planifierDesSoinsToolStripMenuItem";
-            this.planifierDesSoinsToolStripMenuItem.Size = new System.Drawing.Size(301, 34);
+            this.planifierDesSoinsToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
             this.planifierDesSoinsToolStripMenuItem.Text = "Planifier des soins";
             this.planifierDesSoinsToolStripMenuItem.Click += new System.EventHandler(this.planifierDesSoinsToolStripMenuItem_Click);
             // 
             // mnuChambres
             // 
             this.mnuChambres.Name = "mnuChambres";
-            this.mnuChambres.Size = new System.Drawing.Size(301, 34);
+            this.mnuChambres.Size = new System.Drawing.Size(197, 22);
             this.mnuChambres.Text = "Chambres";
             this.mnuChambres.Click += new System.EventHandler(this.mnuChambres_Click);
             // 
             // mnuReserverChambres
             // 
             this.mnuReserverChambres.Name = "mnuReserverChambres";
-            this.mnuReserverChambres.Size = new System.Drawing.Size(301, 34);
+            this.mnuReserverChambres.Size = new System.Drawing.Size(197, 22);
             this.mnuReserverChambres.Text = "Réserver des chambres";
             this.mnuReserverChambres.Click += new System.EventHandler(this.mnuReserverChambres_Click);
             // 
             // mnuRapports
             // 
             this.mnuRapports.Name = "mnuRapports";
-            this.mnuRapports.Size = new System.Drawing.Size(301, 34);
+            this.mnuRapports.Size = new System.Drawing.Size(197, 22);
             this.mnuRapports.Text = "Rapports";
             this.mnuRapports.Click += new System.EventHandler(this.mnuRapports_Click);
             // 
             // mnuDeconnexion
             // 
             this.mnuDeconnexion.Name = "mnuDeconnexion";
-            this.mnuDeconnexion.Size = new System.Drawing.Size(301, 34);
+            this.mnuDeconnexion.Size = new System.Drawing.Size(197, 22);
             this.mnuDeconnexion.Text = "Se déconnecter";
             this.mnuDeconnexion.Click += new System.EventHandler(this.mnuDeconnexion_Click);
             // 
             // mnuQuitter
             // 
             this.mnuQuitter.Name = "mnuQuitter";
-            this.mnuQuitter.Size = new System.Drawing.Size(301, 34);
+            this.mnuQuitter.Size = new System.Drawing.Size(197, 22);
             this.mnuQuitter.Text = "Quitter";
             this.mnuQuitter.Click += new System.EventHandler(this.mnuQuitter_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.quitToolStripMenuItem,
+            this.déconnecterToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
+            // 
+            // quitToolStripMenuItem
+            // 
+            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.quitToolStripMenuItem.Text = "Quitter";
+            // 
+            // déconnecterToolStripMenuItem
+            // 
+            this.déconnecterToolStripMenuItem.Name = "déconnecterToolStripMenuItem";
+            this.déconnecterToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.déconnecterToolStripMenuItem.Text = "Déconnecter";
             // 
             // FrmMenu
             // 
@@ -173,5 +198,8 @@
         private System.Windows.Forms.ToolStripMenuItem mnuRapports;
         private System.Windows.Forms.ToolStripMenuItem mnuDeconnexion;
         private System.Windows.Forms.ToolStripMenuItem mnuQuitter;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem déconnecterToolStripMenuItem;
     }
 }

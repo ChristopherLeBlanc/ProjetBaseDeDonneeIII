@@ -29,6 +29,7 @@ namespace ProjetBaseDeDonneeIII
                 this.bDB56Projet1CKWDataSet.Utilisateur);
 
             // Relier les champs à l'utilisateur courant.
+            
             txtNo.DataBindings.Clear();
             txtNom.DataBindings.Clear();
             txtMdp.DataBindings.Clear();
