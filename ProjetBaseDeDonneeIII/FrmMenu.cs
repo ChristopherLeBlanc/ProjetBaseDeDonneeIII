@@ -20,8 +20,11 @@ namespace ProjetBaseDeDonneeIII
         FrmUtilisateurs fU = new FrmUtilisateurs();
         FrmClientsInvites fCI = new FrmClientsInvites();
         FrmSoins fS = new FrmSoins();
+        FrmPlanifSoins fPS = new FrmPlanifSoins();
+        FrmReservations fR = new FrmReservations();
+        FrmTypesChambres fTC = new FrmTypesChambres();
 
-        FrmAssistantsSoins fAS = new FrmAssistantsSoins();
+        FrmRapports fRP = new FrmRapports();
         public FrmMenu()
         {
             InitializeComponent();
@@ -88,22 +91,30 @@ namespace ProjetBaseDeDonneeIII
 
         private void planifierDesSoinsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fPS.ShowDialog();
+            this.Show();
         }
 
         private void mnuChambres_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fTC.ShowDialog();
+            this.Show();
         }
 
         private void mnuReserverChambres_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fR.ShowDialog();
+            this.Show();
         }
 
         private void mnuRapports_Click(object sender, EventArgs e)
         {
-
+            this.Hide();
+            fRP.ShowDialog();
+            this.Show();
         }
 
         private void mnuDeconnexion_Click(object sender, EventArgs e)
