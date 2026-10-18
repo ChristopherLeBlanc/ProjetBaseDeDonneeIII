@@ -69,6 +69,14 @@
             this.BtnRetour = new System.Windows.Forms.Button();
             this.soinsAssBindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.comSoins = new System.Windows.Forms.ComboBox();
+            this.soinBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.soinTableAdapter = new ProjetBaseDeDonneeIII.BDB56Projet1CKWDataSetTableAdapters.SoinTableAdapter();
+            this.soinDataGridView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.assistantBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bDB56Projet1CKWDataSet)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.assistantSoinBindingSource)).BeginInit();
@@ -76,6 +84,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssDataGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.assistantDataGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssBindingSource1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.soinBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.soinDataGridView)).BeginInit();
             this.SuspendLayout();
             // 
             // assistantBindingSource
@@ -260,6 +270,7 @@
             this.BtnSuppSoins.TabIndex = 5;
             this.BtnSuppSoins.Text = "Supprimer un soin";
             this.BtnSuppSoins.UseVisualStyleBackColor = true;
+            this.BtnSuppSoins.Click += new System.EventHandler(this.BtnSuppSoins_Click);
             // 
             // BtnSuppAss
             // 
@@ -407,11 +418,69 @@
             this.comSoins.TabIndex = 25;
             this.comSoins.Visible = false;
             // 
+            // soinBindingSource
+            // 
+            this.soinBindingSource.DataMember = "Soin";
+            this.soinBindingSource.DataSource = this.bDB56Projet1CKWDataSet;
+            // 
+            // soinTableAdapter
+            // 
+            this.soinTableAdapter.ClearBeforeFill = true;
+            // 
+            // soinDataGridView
+            // 
+            this.soinDataGridView.AutoGenerateColumns = false;
+            this.soinDataGridView.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.soinDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.soinDataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn11,
+            this.dataGridViewTextBoxColumn12,
+            this.dataGridViewTextBoxColumn13,
+            this.dataGridViewTextBoxColumn14,
+            this.dataGridViewTextBoxColumn15});
+            this.soinDataGridView.DataSource = this.soinBindingSource;
+            this.soinDataGridView.Location = new System.Drawing.Point(854, 363);
+            this.soinDataGridView.Name = "soinDataGridView";
+            this.soinDataGridView.Size = new System.Drawing.Size(300, 220);
+            this.soinDataGridView.TabIndex = 25;
+            this.soinDataGridView.Visible = false;
+            // 
+            // dataGridViewTextBoxColumn11
+            // 
+            this.dataGridViewTextBoxColumn11.DataPropertyName = "NoSoin";
+            this.dataGridViewTextBoxColumn11.HeaderText = "NoSoin";
+            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
+            // 
+            // dataGridViewTextBoxColumn12
+            // 
+            this.dataGridViewTextBoxColumn12.DataPropertyName = "Description";
+            this.dataGridViewTextBoxColumn12.HeaderText = "Description";
+            this.dataGridViewTextBoxColumn12.Name = "dataGridViewTextBoxColumn12";
+            // 
+            // dataGridViewTextBoxColumn13
+            // 
+            this.dataGridViewTextBoxColumn13.DataPropertyName = "Duree";
+            this.dataGridViewTextBoxColumn13.HeaderText = "Duree";
+            this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
+            // 
+            // dataGridViewTextBoxColumn14
+            // 
+            this.dataGridViewTextBoxColumn14.DataPropertyName = "NoTypeSoin";
+            this.dataGridViewTextBoxColumn14.HeaderText = "NoTypeSoin";
+            this.dataGridViewTextBoxColumn14.Name = "dataGridViewTextBoxColumn14";
+            // 
+            // dataGridViewTextBoxColumn15
+            // 
+            this.dataGridViewTextBoxColumn15.DataPropertyName = "Prix";
+            this.dataGridViewTextBoxColumn15.HeaderText = "Prix";
+            this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
+            // 
             // FrmAssistantsSoins
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1178, 603);
+            this.Controls.Add(this.soinDataGridView);
             this.Controls.Add(this.comSoins);
             this.Controls.Add(this.BtnRetour);
             this.Controls.Add(this.btnAjouterSoins);
@@ -443,6 +512,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssDataGridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.assistantDataGridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.soinsAssBindingSource1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.soinBindingSource)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.soinDataGridView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -489,5 +560,13 @@
         private System.Windows.Forms.Button BtnRetour;
         private System.Windows.Forms.BindingSource soinsAssBindingSource1;
         private System.Windows.Forms.ComboBox comSoins;
+        private System.Windows.Forms.BindingSource soinBindingSource;
+        private BDB56Projet1CKWDataSetTableAdapters.SoinTableAdapter soinTableAdapter;
+        private System.Windows.Forms.DataGridView soinDataGridView;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn13;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn15;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProjetBaseDeDonneeIII.BDB56Projet1CKWDataSetTableAdapters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -21,6 +22,7 @@ namespace ProjetBaseDeDonneeIII
         int positionOrigineAssistant;   // field, at the top of the class
         bool modeAjout = false;
         Boolean ajoutSoins = false;
+        Boolean suppSoins = false;
         public FrmAssistantsSoins()
         {
             InitializeComponent();
@@ -36,11 +38,14 @@ namespace ProjetBaseDeDonneeIII
 
         private void FrmAssistantsSoins_Load(object sender, EventArgs e)
         {
+            // TODO: This line of code loads data into the 'bDB56Projet1CKWDataSet.Soin' table. You can move, or remove it, as needed.
+            this.soinTableAdapter.Fill(this.bDB56Projet1CKWDataSet.Soin);
             // TODO: This line of code loads data into the 'bDB56Projet1CKWDataSet.SoinsAss' table. You can move, or remove it, as needed.
             // TODO: This line of code loads data into the 'bDB56Projet1CKWDataSet.Assistant' table. You can move, or remove it, as needed.
             this.assistantTableAdapter.Fill(this.bDB56Projet1CKWDataSet.Assistant);
             // TODO: This line of code loads data into the 'bDB56Projet1CKWDataSet.AssistantSoin' table. You can move, or remove it, as needed.
             this.assistantSoinTableAdapter.Fill(this.bDB56Projet1CKWDataSet.AssistantSoin);
+            this.soinTableAdapter.Fill(bDB56Projet1CKWDataSet.Soin);
             int largeur = this.Width;
             int hauteur = this.Height;
 
@@ -62,18 +67,58 @@ namespace ProjetBaseDeDonneeIII
         private void assistanBindingSource_PositionChanged(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("PositionChanged appelé");
+
             int noEnregistrement = assistantBindingSource.Position;
             int nbEnregistrements = assistantBindingSource.Count;
-            if (noEnregistrement >= 0 && noEnregistrement < nbEnregistrements )
-            {
-                dynamic enregistrementSelectionne = assistantBindingSource.Current;
-                if (enregistrementSelectionne is DataRowView data && data["NoAssistant"] != DBNull.Value)
+
+                if (noEnregistrement >= 0 && noEnregistrement < nbEnregistrements)
                 {
-                    int noAssistantSelectionne = enregistrementSelectionne["NoAssistant"];
-                    soinsAssTableAdapter.ClearBeforeFill = true;
-                    soinsAssTableAdapter.Fill(this.bDB56Projet1CKWDataSet.SoinsAss, noAssistantSelectionne);
+                    dynamic enregistrementSelectionne = assistantBindingSource.Current;
+                    if (enregistrementSelectionne is DataRowView data && data["NoAssistant"] != DBNull.Value)
+                    {
+                        int noAssistantSelectionne = enregistrementSelectionne["NoAssistant"];
+                        soinsAssTableAdapter.ClearBeforeFill = true;
+                        soinsAssTableAdapter.Fill(this.bDB56Projet1CKWDataSet.SoinsAss, noAssistantSelectionne);
+                    }
                 }
+            if (comSoins.Visible&&!suppSoins)
+            {
+                RemplirComboAjout();
+            }else if (comSoins.Visible && suppSoins)
+            {
+                remplirComboSupp();
             }
+
+        }
+
+        private void remplirComboSupp()
+        {
+            foreach (DataColumn c in bDB56Projet1CKWDataSet.SoinsAss.Columns)
+                System.Diagnostics.Debug.WriteLine("colonne SoinsAss : " + c.ColumnName);
+            var Offerts = bDB56Projet1CKWDataSet.SoinsAss.AsEnumerable().Select(r => r["NoSoin"].ToString()).ToList();
+
+            DataView dataV = new DataView(bDB56Projet1CKWDataSet.Soin);
+            if (Offerts.Count > 0) { dataV.RowFilter = $"NoSoin  IN ({string.Join(",", Offerts)})"; }
+
+            comSoins.DataSource = dataV;
+            comSoins.DisplayMember = "Description";
+            comSoins.ValueMember = "NoSoin";
+            comSoins.Enabled = dataV.Count > 0;
+
+            
+        }
+        private void RemplirComboAjout(){
+            foreach (DataColumn c in bDB56Projet1CKWDataSet.SoinsAss.Columns)
+                System.Diagnostics.Debug.WriteLine("colonne SoinsAss : " + c.ColumnName);
+            var dejaOfferts = bDB56Projet1CKWDataSet.SoinsAss.AsEnumerable().Select(r => r["NoSoin"].ToString()).ToList();
+
+            DataView dataV = new DataView(bDB56Projet1CKWDataSet.Soin);
+            if (dejaOfferts.Count > 0) { dataV.RowFilter = $"NoSoin NOT IN ({string.Join(",", dejaOfferts)})";}
+
+            comSoins.DataSource = dataV;
+            comSoins.DisplayMember = "Description";
+            comSoins.ValueMember = "NoSoin";
+            comSoins.Enabled = dataV.Count > 0;
         }
 
         private void assistantSoinBindingSource_CurrentChanged(object sender, EventArgs e)
@@ -194,7 +239,72 @@ namespace ProjetBaseDeDonneeIII
 
         }
 
-      
+        private void ajouterSoinsAss()
+        {
+            if (comSoins.SelectedValue == null)
+            {
+                MessageBox.Show("Veuillez choisir un soin.");
+                return;
+            }
+
+            int noAssistant = Convert.ToInt32(((DataRowView)assistantBindingSource.Current)["NoAssistant"]);
+            int noSoin = Convert.ToInt32(comSoins.SelectedValue);
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(maChaineDeConnexion))
+                using (SqlCommand cmd = new SqlCommand("INSERT into AssistantSoin (NoAssistant, NoSoin) VALUES (@ass, @soin)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ass", noAssistant);
+                    cmd.Parameters.AddWithValue("@soin", noSoin);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                MessageBox.Show("Soin ajouté à l'assistant.");
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show("Impossible d'ajouter le soin : " + ex.Message);
+            }
+
+
+            FinSoin();
+        }
+        private void suppSoinsAss()
+        {
+            if (comSoins.SelectedValue == null)
+            {
+                MessageBox.Show("Veuillez choisir un soin.");
+                return;
+            }
+
+            int noAssistant = Convert.ToInt32(((DataRowView)assistantBindingSource.Current)["NoAssistant"]);
+            int noSoin = Convert.ToInt32(comSoins.SelectedValue);
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(maChaineDeConnexion))
+                using (SqlCommand cmd = new SqlCommand("Delete from AssistantSoin where noSoin = @soin and NoAssistant = @ass", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ass", noAssistant);
+                    cmd.Parameters.AddWithValue("@soin", noSoin);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                MessageBox.Show("Soin supprimer de l'assistant.");
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show("Impossible d'ajouter le soin : " + ex.Message);
+            }
+            FinSoin();
+        }
+        private void FinSoin()
+        {
+            ajoutSoins = false;
+            comSoins.Visible = false;
+            AfficherBtnConfirmer(false);
+            AfficherBoutons(true);
+            FocusAssistant(false);
+        }
 
 
         private void BtnConfirmer_Click(object sender, EventArgs e)
@@ -202,9 +312,22 @@ namespace ProjetBaseDeDonneeIII
             ErrorProvider errMessage = new ErrorProvider();
             errMessage.Clear();
             bool valide = true;
+            if (comSoins.Visible&&!suppSoins) {
+
+                ajouterSoinsAss();
+
+                return;
+            }else if (comSoins.Visible && suppSoins)
+            {
+                suppSoinsAss();
+                return;
+            }
             
             if (string.IsNullOrWhiteSpace(prenomTextBox.Text))
-            { errMessage.SetError(prenomTextBox, "Le prénom est requis."); valide = false; }
+            { 
+                errMessage.SetError(prenomTextBox, "Le prénom est requis."); 
+                valide = false; 
+            }
 
             if (string.IsNullOrWhiteSpace(nomTextBox.Text))
             { errMessage.SetError(nomTextBox, "Le nom est requis."); valide = false; }
@@ -314,20 +437,27 @@ namespace ProjetBaseDeDonneeIII
         {
             comSoins.Visible = true;
             comSoins.Enabled = true;
-            var dejaOfferts = bDB56Projet1CKWDataSet.SoinsAss.AsEnumerable()
-                .Select(r => r["NoSoin"].ToString())
-                .ToList();
+          
 
             FocusAssistant(true);
             AfficherBoutons(false);
             AfficherBtnConfirmer(true);
             AfficherTexteAss(false);
-            DataView dv = new DataView(bDB56Projet1CKWDataSet.Soin);
-            if (dejaOfferts.Count > 0)
-                dv.RowFilter = $"NoSoin NOT IN ({string.Join(",", dejaOfferts)})";
-            comSoins.DataSource = dv;
-            comSoins.DisplayMember = "Description";
-            comSoins.ValueMember = "NoSoin";
+            
+        }
+
+        private void BtnSuppSoins_Click(object sender, EventArgs e)
+        {
+            suppSoins = true;
+            comSoins.Visible = true;
+            comSoins.Enabled = true;
+            FocusAssistant(true);
+            AfficherBoutons(false);
+            AfficherBtnConfirmer(true);
+            AfficherTexteAss(false);
+
+
+
         }
     }
     }

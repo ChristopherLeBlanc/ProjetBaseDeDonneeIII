@@ -23,7 +23,7 @@ namespace ProjetBaseDeDonneeIII
         FrmPlanifSoins fPS = new FrmPlanifSoins();
         FrmReservations fR = new FrmReservations();
         FrmTypesChambres fTC = new FrmTypesChambres();
-
+        FrmAssistantsSoins fAS = new FrmAssistantsSoins();
         FrmRapports fRP = new FrmRapports();
         public FrmMenu()
         {
