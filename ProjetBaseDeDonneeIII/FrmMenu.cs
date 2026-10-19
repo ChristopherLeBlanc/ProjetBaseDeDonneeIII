@@ -49,8 +49,6 @@ namespace ProjetBaseDeDonneeIII
             mnuReserverChambres.Visible = admin || prepose;
 
     
-            mnuDeconnexion.Visible = true;
-            mnuQuitter.Visible = true;
         }
 
         private void mnuUtilisateurs_Click(object sender, EventArgs e)
@@ -115,6 +113,31 @@ namespace ProjetBaseDeDonneeIII
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Deconnexion = false;
+                Close();
+            }
+        }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Voulez-vous quitter l'application ?", "Quitter",
+              MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                Deconnexion = false;
+                Close();
+            }
+        }
+
+        private void déconnecterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Voulez-vous vous déconnecter ?", "Déconnexion",
+            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                Deconnexion = true;
                 Close();
             }
         }

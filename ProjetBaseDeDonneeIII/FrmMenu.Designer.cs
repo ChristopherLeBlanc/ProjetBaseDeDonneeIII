@@ -38,8 +38,9 @@
             this.mnuChambres = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuReserverChambres = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuRapports = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuDeconnexion = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuQuitter = new System.Windows.Forms.ToolStripMenuItem();
+            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.déconnecterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -65,9 +66,7 @@
             this.planifierDesSoinsToolStripMenuItem,
             this.mnuChambres,
             this.mnuReserverChambres,
-            this.mnuRapports,
-            this.mnuDeconnexion,
-            this.mnuQuitter});
+            this.mnuRapports});
             this.mnuPlanifSoins.Name = "mnuPlanifSoins";
             this.mnuPlanifSoins.Size = new System.Drawing.Size(73, 29);
             this.mnuPlanifSoins.Text = "Menu";
@@ -128,19 +127,29 @@
             this.mnuRapports.Text = "Rapports";
             this.mnuRapports.Click += new System.EventHandler(this.mnuRapports_Click);
             // 
-            // mnuDeconnexion
+            // quitToolStripMenuItem
             // 
-            this.mnuDeconnexion.Name = "mnuDeconnexion";
-            this.mnuDeconnexion.Size = new System.Drawing.Size(301, 34);
-            this.mnuDeconnexion.Text = "Se déconnecter";
-            this.mnuDeconnexion.Click += new System.EventHandler(this.mnuDeconnexion_Click);
+            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.quitToolStripMenuItem.Text = "Quitter";
+            this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
             // 
-            // mnuQuitter
+            // déconnecterToolStripMenuItem
             // 
-            this.mnuQuitter.Name = "mnuQuitter";
-            this.mnuQuitter.Size = new System.Drawing.Size(301, 34);
-            this.mnuQuitter.Text = "Quitter";
-            this.mnuQuitter.Click += new System.EventHandler(this.mnuQuitter_Click);
+            this.déconnecterToolStripMenuItem.Name = "déconnecterToolStripMenuItem";
+            this.déconnecterToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.déconnecterToolStripMenuItem.Text = "Déconnecter";
+            this.déconnecterToolStripMenuItem.Click += new System.EventHandler(this.déconnecterToolStripMenuItem_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.quitToolStripMenuItem,
+            this.déconnecterToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // FrmMenu
             // 
@@ -171,7 +180,8 @@
         private System.Windows.Forms.ToolStripMenuItem mnuChambres;
         private System.Windows.Forms.ToolStripMenuItem mnuReserverChambres;
         private System.Windows.Forms.ToolStripMenuItem mnuRapports;
-        private System.Windows.Forms.ToolStripMenuItem mnuDeconnexion;
-        private System.Windows.Forms.ToolStripMenuItem mnuQuitter;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem déconnecterToolStripMenuItem;
     }
 }
