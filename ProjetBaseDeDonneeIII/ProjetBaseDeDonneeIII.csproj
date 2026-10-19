@@ -125,8 +125,17 @@
     <EmbeddedResource Include="FrmMenu.resx">
       <DependentUpon>FrmMenu.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmPlanifSoins.resx">
+      <DependentUpon>FrmPlanifSoins.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRapports.resx">
+      <DependentUpon>FrmRapports.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmSoins.resx">
       <DependentUpon>FrmSoins.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmTypesChambres.resx">
+      <DependentUpon>FrmTypesChambres.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmUtilisateurs.resx">
       <DependentUpon>FrmUtilisateurs.cs</DependentUpon>

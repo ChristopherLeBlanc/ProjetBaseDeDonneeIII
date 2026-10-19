@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
@@ -25,8 +26,7 @@ namespace ProjetBaseDeDonneeIII
 
             if (nom == "" || mdp == "")
             {
-                MessageBox.Show("Veuillez entrer votre nom d'utilisateur et votre mot de passe.",
-                                "Champs obligatoires", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Veuillez entrer votre nom d'utilisateur et votre mot de passe.", "Champs obligatoires", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -38,9 +38,7 @@ namespace ProjetBaseDeDonneeIII
                 maConnexion.ConnectionString = maChaineDeConnexion;
                 maConnexion.Open();
 
-                // 1re requête : le numéro de l'utilisateur
-                String maRequeteSQL = "SELECT NoUtilisateur FROM Utilisateur " +
-                                      "WHERE NomUtilisateur = @nom AND MotDePasse = @mdp";
+                String maRequeteSQL = "SELECT NoUtilisateur FROM Utilisateur WHERE NomUtilisateur = @nom AND MotDePasse = @mdp";
                 SqlCommand maCommande = new SqlCommand(maRequeteSQL, maConnexion);
 
                 SqlParameter parametreNom = new SqlParameter("@nom", SqlDbType.VarChar, 30);
@@ -53,7 +51,6 @@ namespace ProjetBaseDeDonneeIII
 
                 noUtilisateur = maCommande.ExecuteScalar();
 
-                // 2e requête : le type de l'utilisateur (seulement s'il existe)
                 if (noUtilisateur != null)
                 {
                     String requeteType = "SELECT NoTypeUtilisateur FROM Utilisateur WHERE NoUtilisateur = @no";
@@ -64,28 +61,27 @@ namespace ProjetBaseDeDonneeIII
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Impossible de se connecter à la base de données :\n" + ex.Message,
-                                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;   // une erreur de base de données n'est pas un essai raté
+                MessageBox.Show("Impossible de se connecter à la base de données :\n" + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
             finally
             {
-                maConnexion.Close();   // IMPORTANT DE FERMER LA CONNEXION
+                maConnexion.Close();
             }
 
             if (noUtilisateur == null)
             {
                 nbEssais++;
+
                 if (nbEssais >= MAX_ESSAIS)
                 {
-                    MessageBox.Show("Trop d'échecs. L'application va se fermer.",
-                                    "Accès refusé", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show("Trop d'échecs. L'application va se fermer.", "Accès refusé", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     DialogResult = DialogResult.Cancel;
                     Close();
                     return;
                 }
-                MessageBox.Show("Nom d'utilisateur ou mot de passe incorrect.\nEssai " + nbEssais + " sur " + MAX_ESSAIS + ".",
-                                "Échec", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                MessageBox.Show("Nom d'utilisateur ou mot de passe incorrect.\nEssai " + nbEssais + " sur " + MAX_ESSAIS + ".", "Échec", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtMdp.Clear();
                 txtMdp.Focus();
                 return;
